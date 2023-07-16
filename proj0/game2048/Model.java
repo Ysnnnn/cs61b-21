@@ -113,14 +113,72 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        changed = checkChange(side, this.board);
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
     }
+    /** 棋盘有没有新的变化并且操作*/
+    public Boolean checkChange(Side side, Board b) {
+        Boolean change;
+        change = false;
+        b.setViewingPerspective(side);
+        for(int col = 0; col < 4; col += 1) {
+            if(checkColum(b, col)) {
+                change = true;
+            }
+        }
+        b.setViewingPerspective(Side.NORTH);
+        return change;
+    }
+    /**看某一列有没有新的变化并且操作，有就返回true*/
+    public Boolean checkColum(Board b, int col) {
+        Boolean colChange, i, j;
+        i = setTilesUp(b, col);
+        j = mergeTiles(b, col);
+        colChange = (i || j);
+        return colChange;
+    }
 
+    /**把一列的tile都放到上面 ，消除之间的null，有变化就返回true*/
+    public  Boolean setTilesUp(Board b, int col) {
+        Boolean nullChange;
+        nullChange = false;
+        int nextRow;
+        for(int row = 3; row > 0 ; row -= 1) {
+            if(b.tile(col, row) == null) {
+                if(b.tile(col, row - 1 ) != null) {
+                    board.move(col, row, b.tile(col, row -1 ));
+                    nullChange = true;
+                    nextRow = row +1 ;
+                    while(nextRow < 4 && b.tile(col,nextRow) == null) {
+                        board.move(col, nextRow, b.tile(col, nextRow - 1));
+                        nextRow  += 1;
+                    }
+                }
+            }
+        }
+        return nullChange;
+    }
+    /**看setTilesUp之后的列有没有可以合并的并且操作，如果有返回true*/
+    public  Boolean mergeTiles(Board b, int col) {
+        Boolean mergeChange;
+        mergeChange = false;
+        for(int row = 3; row > 0 ; row -= 1) {
+            if(b.tile(col, row) == null || b.tile(col, row - 1) == null) {
+                break;
+            }
+            if(b.tile(col, row).value() == b.tile(col, row - 1).value()) {
+                board.move(col, row, b.tile(col, row - 1));
+                this.score += b.tile(col, row).value();
+                setTilesUp(b, col);
+                mergeChange = true;
+            }
+        }
+        return mergeChange;
+    }
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
      */
