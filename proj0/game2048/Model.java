@@ -141,6 +141,7 @@ public class Model extends Observable {
         colChange = (i || j);
         return colChange;
     }
+<<<<<<< HEAD
 
     /**把一列的tile都放到上面 ，消除之间的null，有变化就返回true*/
     public  Boolean setTilesUp(Board b, int col) {
@@ -179,7 +180,46 @@ public class Model extends Observable {
         }
         return mergeChange;
     }
+=======
+>>>>>>> bd23e887e70b95a0cefa39a517661abca63be8e8
 
+    /**把一列的tile都放到上面 ，消除之间的null，有变化就返回true*/
+    public  Boolean setTilesUp(Board b, int col) {
+        Boolean nullChange;
+        nullChange = false;
+        int nextRow;
+        for(int row = 3; row > 0 ; row -= 1) {
+            if(b.tile(col, row) == null) {
+                if(b.tile(col, row - 1 ) != null) {
+                    board.move(col, row, b.tile(col, row -1 ));
+                    nullChange = true;
+                    nextRow = row +1 ;
+                    while(nextRow < 4 && b.tile(col,nextRow) == null) {
+                        board.move(col, nextRow, b.tile(col, nextRow - 1));
+                        nextRow  += 1;
+                    }
+                }
+            }
+        }
+        return nullChange;
+    }
+    /**看setTilesUp之后的列有没有可以合并的并且操作，如果有返回true*/
+    public  Boolean mergeTiles(Board b, int col) {
+        Boolean mergeChange;
+        mergeChange = false;
+        for(int row = 3; row > 0 ; row -= 1) {
+            if(b.tile(col, row) == null || b.tile(col, row - 1) == null) {
+                break;
+            }
+            if(b.tile(col, row).value() == b.tile(col, row - 1).value()) {
+                board.move(col, row, b.tile(col, row - 1));
+                this.score += b.tile(col, row).value();
+                setTilesUp(b, col);
+                mergeChange = true;
+            }
+        }
+        return mergeChange;
+    }
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
      */
@@ -197,6 +237,15 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int col;
+        int row;
+        for (col = 0; col < b.size(); col += 1) {
+            for(row = 0; row < b.size(); row += 1) {
+                if(b.tile(col, row) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -207,6 +256,17 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int row;
+        int col;
+        for (col = 0; col < b.size(); col += 1) {
+            for(row = 0; row < b.size(); row += 1) {
+                if(b.tile(col, row) == null) {
+                    continue;
+                } else if (b.tile(col, row).value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -218,6 +278,27 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        int row;
+        int col;
+        if(Model.emptySpaceExists(b)) {
+            return true;
+        } else {
+            for(row = 0; row < b.size(); row += 1){
+                for(col = 0; col < b.size()-1; col += 1){
+                    if(b.tile(col, row).value() ==b.tile(col + 1, row).value()){
+                        return true;
+                    }
+                }
+            }
+            for(row = 0; row < b.size() - 1; row += 1){
+                for(col = 0; col < b.size(); col += 1){
+                    if(b.tile(col, row).value() ==b.tile(col, row +1 ).value()){
+                        return true;
+                    }
+                }
+            }
+
+        }
         return false;
     }
 
