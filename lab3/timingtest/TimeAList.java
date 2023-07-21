@@ -26,7 +26,7 @@ public class TimeAList {
         AList Ns = new AList<Integer>();
         AList times = new AList<Double>();
         int number;
-        for(number = 1000; number < 10000000; number = number * 2) {
+        for(number = 1000; number < 1000000; number = number * 2) {
             Stopwatch sw = new Stopwatch();
             creatAlist(number);
             double timeInSeconds = sw.elapsedTime();
