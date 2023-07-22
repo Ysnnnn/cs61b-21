@@ -5,6 +5,7 @@ public class ArrayDeque<T> {
     private int size;
     private int nextFirst;
     private int nextLsat;
+
     public ArrayDeque() {
         items = (T[]) new Object[8];
         size = 0;
@@ -60,6 +61,47 @@ public class ArrayDeque<T> {
             } else {
                 p += 1;
             }
+        }
+    }
+    public T removeFirst() {
+        if(isEmpty()) {
+            return null;
+        }
+        T first;
+        if(nextFirst == items.length) {
+            nextFirst = 0;
+            first = items[nextFirst];
+            items[nextFirst] = null;
+            return first;
+        } else {
+            nextFirst += 1;
+            first = items[nextFirst];
+            items[nextFirst] = null;
+            return first;
+        }
+    }
+    public T removeLast() {
+        if(isEmpty()) {
+            return null;
+        }
+        T last;
+        if(nextLsat == 0) {
+            nextLsat = items.length;
+            last = items[nextLsat];
+            items[nextLsat] = null;
+            return  last;
+        } else {
+            nextLsat -= 1;
+            last = items[nextLsat];
+            items[nextLsat] = null;
+            return  last;
+        }
+    }
+    public T get(int index) {
+        if(nextFirst == items.length) {
+            return items[0];
+        } else {
+            return items[nextFirst + 1];
         }
     }
 }
