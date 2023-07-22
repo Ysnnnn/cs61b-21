@@ -14,12 +14,15 @@ public class ArrayDeque<T> {
     }
     public void resize(int capacity) {
        T[] newArray = (T []) new Object[capacity];
-       System.arraycopy(items, 0, newArray, 5, size);
+       System.arraycopy(items, nextFirst +1 , newArray, 0, items.length - nextFirst - 1);
+        System.arraycopy(items, 0 , newArray, items.length - nextFirst - 1, nextLsat);
        items = newArray;
+       nextFirst = items.length;
+       nextLsat = size;
     }
     public void addFirst(T item) {
         if(size == items.length) {
-            resize(size * 2);
+            resize(items.length * 2);
         }
         items[nextFirst] = item;
         size += 1;
@@ -98,10 +101,13 @@ public class ArrayDeque<T> {
         }
     }
     public T get(int index) {
+        if(index > size - 1) {
+            return null;
+        }
         if(nextFirst == items.length) {
-            return items[0];
+            return items[index];
         } else {
-            return items[nextFirst + 1];
+            return items[nextFirst + index + 1];
         }
     }
 }
