@@ -52,7 +52,7 @@ public class ArrayDeque<T> {
     }
     public void printDeque() {
         int p;
-        if(nextFirst == items.length) {
+        if(nextFirst == items.length - 1) {
             p = 0;
         } else {
             p = nextFirst + 1;
@@ -71,7 +71,7 @@ public class ArrayDeque<T> {
             return null;
         }
         T first;
-        if(nextFirst == items.length) {
+        if(nextFirst == items.length - 1) {
             nextFirst = 0;
             first = items[nextFirst];
             items[nextFirst] = null;
