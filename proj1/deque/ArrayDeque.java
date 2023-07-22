@@ -75,13 +75,13 @@ public class ArrayDeque<T> {
             nextFirst = 0;
             first = items[nextFirst];
             items[nextFirst] = null;
-            return first;
         } else {
             nextFirst += 1;
             first = items[nextFirst];
             items[nextFirst] = null;
-            return first;
         }
+        size -= 1;
+        return first;
     }
     public T removeLast() {
         if(isEmpty()) {
@@ -92,20 +92,23 @@ public class ArrayDeque<T> {
             nextLsat = items.length;
             last = items[nextLsat];
             items[nextLsat] = null;
-            return  last;
         } else {
             nextLsat -= 1;
             last = items[nextLsat];
             items[nextLsat] = null;
-            return  last;
         }
+        size -= 1;
+        return  last;
     }
+
+    //  0 1 2 3 4 5 6 7
+    //  0     n 0 0 0 0
     public T get(int index) {
         if(index > size - 1) {
             return null;
         }
-        if(nextFirst == items.length) {
-            return items[index];
+        if(nextFirst + index + 1 >= items.length) {
+            return items[nextFirst + index + 1 - items.length];
         } else {
             return items[nextFirst + index + 1];
         }
