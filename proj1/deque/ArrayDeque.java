@@ -12,7 +12,7 @@ public class ArrayDeque<T> {
         nextFirst = 0;
         nextLsat = 1;
     }
-    public void resize(int capacity) {
+    private void resize(int capacity) {
        T[] newArray = (T []) new Object[capacity];
        System.arraycopy(items, nextFirst +1 , newArray, 0, items.length - nextFirst - 1);
         System.arraycopy(items, 0 , newArray, items.length - nextFirst - 1, nextLsat);
