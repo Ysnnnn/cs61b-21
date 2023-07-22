@@ -27,7 +27,7 @@ public class ArrayDeque<T> {
         items[nextFirst] = item;
         size += 1;
         if(nextFirst == 0) {
-            nextFirst = items.length;
+            nextFirst = items.length - 1;
         } else {
             nextFirst -= 1;
         }
@@ -38,7 +38,7 @@ public class ArrayDeque<T> {
         }
         items[nextLsat] = item;
         size += 1;
-        if(nextLsat == items.length) {
+        if(nextLsat == items.length - 1) {
             nextLsat = 0;
         } else  {
             nextLsat += 1;
