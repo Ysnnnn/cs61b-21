@@ -58,7 +58,7 @@ public class GuitarString {
         //       **Do not call StdAudio.play().**
         double a = buffer.removeFirst();
         double b = buffer.get(0);
-        buffer.addLast((a + b) * DECAY);
+        buffer.addLast((a + b) * 0.5* DECAY);
     }
 
     /* Return the double at the front of the buffer. */
