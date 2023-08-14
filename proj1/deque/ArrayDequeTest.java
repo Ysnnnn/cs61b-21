@@ -21,11 +21,24 @@ public class ArrayDequeTest {
     public void randomizedTest() {
         ArrayDeque<Integer> ad1 = new ArrayDeque<Integer>();
         ad1.addFirst(0);
-        ad1.addFirst(1);
-        ad1.addFirst(2);
-        ad1.removeLast();
+        for (int i = 1; i < 20; i++) {
+            ad1.addLast(i);
+        }
+        int a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a = ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
+        a =  ad1.removeLast();
         ad1.addFirst(4);
         ad1.addFirst(5);
-        ad1.removeLast();
+        a =  ad1.removeLast();
     }
 }

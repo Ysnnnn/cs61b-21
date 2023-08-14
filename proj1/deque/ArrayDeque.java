@@ -14,13 +14,19 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
         nextFirst = 0;
         nextLsat = 1;
     }
+    private int addOne(int index) {
+        return (index + 1) % items.length;
+    }
     private void resize(int capacity) {
        T[] newArray = (T []) new Object[capacity];
-       System.arraycopy(items, nextFirst +1 , newArray, 0, items.length - nextFirst - 1);
-        System.arraycopy(items, 0 , newArray, items.length - nextFirst - 1, nextLsat);
-       items = newArray;
-       nextFirst = items.length - 1;
+        int index = addOne(nextFirst);
+        for (int i = 0; i < size; i++) {
+            newArray[i] = items[index];
+            index = addOne(index);
+        }
+       nextFirst = capacity - 1;
        nextLsat = size;
+       items = newArray;
     }
     @Override
     public void addFirst(T item) {
