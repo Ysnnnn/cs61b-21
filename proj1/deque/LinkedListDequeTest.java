@@ -131,4 +131,16 @@ public class LinkedListDequeTest {
 
 
     }
+    @Test
+    /* Add large number of elements to deque; check if order is correct. */
+    public void removeLastTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        lld1.addLast(0);
+        lld1.removeFirst();
+        lld1.addLast(2);
+        lld1.addLast(3);
+        lld1.addLast(4);
+        lld1.addLast(5);
+        int a = lld1.removeFirst();
+    }
 }
