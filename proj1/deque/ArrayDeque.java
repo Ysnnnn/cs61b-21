@@ -97,7 +97,7 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
         }
         T last;
         if(nextLsat == 0) {
-            nextLsat = items.length;
+            nextLsat = items.length - 1;
             last = items[nextLsat];
             items[nextLsat] = null;
         } else {
@@ -111,9 +111,6 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
         }
         return  last;
     }
-
-    //  0 1 2 3 4 5 6 7
-    //  0     n 0 0 0 0
     @Override
     public T get(int index) {
         if(index > size - 1) {
