@@ -85,6 +85,9 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
             items[nextFirst] = null;
         }
         size -= 1;
+        if (size < items.length / 4 && size > 8) {
+            resize(size * 2);
+        }
         return first;
     }
     @Override
@@ -103,6 +106,9 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
             items[nextLsat] = null;
         }
         size -= 1;
+        if (size < items.length / 4 && size > 8) {
+            resize(size * 2);
+        }
         return  last;
     }
 
