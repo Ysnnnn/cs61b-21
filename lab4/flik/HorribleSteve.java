@@ -3,6 +3,7 @@ package flik;
 public class HorribleSteve {
     public static void main(String [] args) throws Exception {
         int i = 0;
+        System.out.println(Flik.isSameNumber(128, 128));
         for (int j = 0; i < 500; ++i, ++j) {
             if (!Flik.isSameNumber(i, j)) {
                 throw new Exception(
