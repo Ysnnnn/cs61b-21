@@ -118,6 +118,12 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
         } else if (cmp < 0) {
             node.rightSon = remove(node.rightSon, key);
         } else {
+            if (node.rightSon == null) {
+                return node.leftSon;
+            }
+            if (node.leftSon == null) {
+                return node.rightSon;
+            }
             BSTNode targetNode = node;
             node = findMin(targetNode.rightSon);
             node.leftSon = targetNode.leftSon;
