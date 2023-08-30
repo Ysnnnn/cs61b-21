@@ -1,5 +1,6 @@
 package bstmap;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -93,21 +94,69 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
     }
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        HashSet<K> set = new HashSet<>();
+        addKey(set, root);
+        return set;
+    }
+    /** add all key to keySet */
+    private void addKey(Set<K> set, BSTNode node) {
+        if (node == null) {
+            return;
+        }
+        set.add(node.key);
+        addKey(set, node.leftSon);
+        addKey(set, node.rightSon);
     }
 
+    private BSTNode remove(BSTNode node, K key) {
+        if (node == null) {
+            return null;
+        }
+        int cmp = node.key.compareTo(key);
+        if (cmp > 0) {
+            node.leftSon = remove(node.leftSon, key);
+        } else if (cmp < 0) {
+            node.rightSon = remove(node.rightSon, key);
+        } else {
+            BSTNode targetNode = node;
+            node = findMin(targetNode);
+            node.leftSon = targetNode.leftSon;
+            node.rightSon = remove(targetNode.rightSon, node.key);
+        }
+
+    }
+    private BSTNode findMin(BSTNode node) {
+        if (node.leftSon == null) {
+            return node;
+        }
+        return findMin(node.leftSon);
+    }
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        if (containsKey(key)) {
+            V val = get(key);
+            root = remove(root, key);
+            size -= 1;
+            return val;
+        }
+        return null;
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (containsKey(key)) {
+            V val = get(key);
+            if (val.equals(key)) {
+                root = remove(root ,key);
+                size -= 1;
+                return val;
+            }
+        }
+        return null;
     }
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
+        return keySet().iterator();
     }
 }
