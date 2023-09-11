@@ -20,13 +20,13 @@ public class Main {
         switch(firstArg) {
             case "init":
                 // TODO: handle the `init` command
-                if (args.length != 1) {
-                    exit("Incorrect operands.");
-                }
+                checkArgs(args, 1);
                 init();
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
+                checkArgs(args,2);
+                
                 break;
             // TODO: FILL THE REST IN
             case "commit":
@@ -35,6 +35,11 @@ public class Main {
 
             default:
                 exit("No command with that name exists.");
+        }
+    }
+    static void checkArgs(String[] args, int validNumber) {
+        if (args.length != validNumber) {
+            exit("Incorrect operands.");
         }
     }
 }

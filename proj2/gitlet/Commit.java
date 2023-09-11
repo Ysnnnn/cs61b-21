@@ -64,7 +64,7 @@ public class Commit implements Serializable {
         return str;
     }
     private String generateUID() {
-        return sha1(message, timeStamp, fileToBlob, parents);
+        return sha1(message, timeStamp, fileToBlob.toString(), parents.toString());
     }
 
     private File generateFileName() {
