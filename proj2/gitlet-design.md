@@ -1,6 +1,6 @@
 # Gitlet Design Document
 
-**Name**:
+**Name**:Ysnnnn
 
 ## Classes and Data Structures
 
@@ -23,4 +23,13 @@
 ## Algorithms
 
 ## Persistence
+    .gitlet
+     *      |--objects
+     *      |     |--commit and blob
+     *      |--refs
+     *      |    |--heads
+     *      |         |--master
+     *      |--HEAD
+     *      |--addstage
+     *      |--removestage
 

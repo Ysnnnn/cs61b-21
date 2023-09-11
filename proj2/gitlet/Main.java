@@ -1,7 +1,10 @@
 package gitlet;
 
+import static gitlet.Commit.*;
+import static gitlet.MyHelperFunction.*;
+import static gitlet.Repository.*;
 /** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author TODO
+ *  @author Ysnnnn
  */
 public class Main {
 
@@ -10,15 +13,28 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO: what if args is empty?
+        if (args.length == 0) {
+            exit("Please enter a command.");
+        }
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
                 // TODO: handle the `init` command
+                if (args.length != 1) {
+                    exit("Incorrect operands.");
+                }
+                init();
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
+            case "commit":
+
+                break;
+
+            default:
+                exit("No command with that name exists.");
         }
     }
 }
