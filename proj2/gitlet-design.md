@@ -32,4 +32,5 @@
      *      |--HEAD
      *      |--addstage
      *      |--removestage
+写到读取addStage了
 

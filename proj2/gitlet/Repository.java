@@ -26,7 +26,8 @@ public class Repository {
      *      *      |    |--heads
      *      *      |         |--master
      *      *      |--HEAD
-     *      *      |--index
+     *      *      |--addStage
+     *      *      |--removeStage
      */
 
     /** The current working directory. */
@@ -39,6 +40,10 @@ public class Repository {
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
     /** heads directory to store master. */
     public static final File HEADS_DIR = join(GITLET_DIR, "heads");
+    /** addStage File */
+    public static final File ADD_STAGE = join(GITLET_DIR, "addStage");
+    /** removeStage File */
+    public static final File REMOVE_STAGE = join(GITLET_DIR, "removeStage");
     /* TODO: fill in the rest of this class. */
     static void init() {
         if (GITLET_DIR.exists()) {
@@ -52,7 +57,21 @@ public class Repository {
         initCommit.saveCommit();
         changeMaster(initCommit.getUID());
     }
+    static void add(String filename) {
+        Blob blob = new Blob(filename);
+        blob.saveBlob();
+        StageArea addStage= getAddStage();
+    }
     public static void changeMaster(String commitUID) {
         writeContents(join(HEADS_DIR, "master"), commitUID);
+    }
+    public static void writeHEAD(String masterRef) {
+        writeContents(join(GITLET_DIR, "HEAD"), "refs/heads/master");
+    }
+    static StageArea getAddStage() {
+        if (!ADD_STAGE.exists()) {
+            return new StageArea();
+        }
+        return readObject(ADD_STAGE, StageArea.class);
     }
 }

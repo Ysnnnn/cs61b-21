@@ -26,7 +26,8 @@ public class Main {
             case "add":
                 // TODO: handle the `add [filename]` command
                 checkArgs(args,2);
-                
+                checkInitialized();
+                add(args[1]);
                 break;
             // TODO: FILL THE REST IN
             case "commit":
@@ -40,6 +41,11 @@ public class Main {
     static void checkArgs(String[] args, int validNumber) {
         if (args.length != validNumber) {
             exit("Incorrect operands.");
+        }
+    }
+    static void checkInitialized() {
+        if (!GITLET_DIR.exists()) {
+            exit("Not in an initialized Gitlet directory.");
         }
     }
 }
