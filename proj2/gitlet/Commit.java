@@ -28,22 +28,22 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    private String message;
-    private Date currentTime;
-    private HashMap<String, String> fileToBlob;
-    private List<String> parents;
-    private String UID;
-    private String timeStamp;
-    private File CommitFileName;
+    private final String message;
+    private final Date currentTime;
+    private final HashMap<String, String> fileToBlob;
+    private final List<String> parents;
+    private final String UID;
+    private final String timeStamp;
+    private final File CommitFileName;
 
     /* TODO: fill in the rest of this class. */
     /** generic commit constructor*/
-    public Commit(String message, Date currentTime, HashMap fileToBlob, List parents) {
-        this.message = "initial commit";
+    public Commit(String message, Date currentTime, HashMap<String, String> fileToBlob, List<String> parents) {
+        this.message = message;
         this.currentTime = new Date(0);
         this.timeStamp = dateToString(currentTime);
-        this.fileToBlob = new HashMap<>();
-        this.parents = new ArrayList<>();
+        this.fileToBlob = fileToBlob;
+        this.parents = parents;
         this.UID = generateUID();
         this.CommitFileName = generateFileName();
     }
@@ -82,7 +82,7 @@ public class Commit implements Serializable {
     public String getTimeStamp() {
         return this.timeStamp;
     }
-    public HashMap getfileToBlob() {
+    public HashMap<String, String> getFileToBlob() {
         return this.fileToBlob;
     }
 }

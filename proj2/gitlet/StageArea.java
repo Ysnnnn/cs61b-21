@@ -33,6 +33,9 @@ public class StageArea implements Serializable {
     public HashMap getFiletToBlob() {
         return this.fileToBlob;
     }
+    static Boolean stageIsEmpty(StageArea stage) {
+        return stage.fileToBlob.isEmpty();
+    }
 
 
 

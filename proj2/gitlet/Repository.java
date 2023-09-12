@@ -1,7 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.*;
 
 import static gitlet.StageArea.*;
 import static gitlet.Utils.*;
@@ -79,8 +79,7 @@ public class Repository {
         /** judge if the current working version of the file is identical to the version in
          * the current commit
          */
-        String masterCommitUID = readContentsAsString(MASTER);
-        Commit masterCommit = readObject(join(OBJECT_DIR, masterCommitUID), Commit.class);
+        Commit masterCommit = getMasterCommit();
         if (!sameFileAndMaster(masterCommit, filename, newBlobName)) {
             /** add file to addition stage */
             addStage.addFileToBlob(filename, newBlobName);
@@ -92,7 +91,28 @@ public class Repository {
         }
 
     }
-    /** let master points to new commit */
+    static void commit(String message) {
+        if (message == null) {
+            exit("Please enter a commit message.");
+        }
+        StageArea addStage = getAddStage();
+        if (stageIsEmpty(addStage)) {
+            exit("No changes added to the commit.");
+        }
+        Commit masterCommit = getMasterCommit();
+        HashMap<String, String> fileToBlob = masterCommit.getFileToBlob();
+        String masterUID = masterCommit.getUID();
+        HashMap stageFileToBlob = addStage.getFiletToBlob();
+        for (Object fileName : stageFileToBlob.keySet()) {
+            fileToBlob.put((String)fileName, (String) stageFileToBlob.get(fileName));
+        }
+        List<String> parents = new ArrayList<>();
+        parents.add(masterUID);
+        Commit newMasterCommit = new Commit(message, new Date(), fileToBlob, parents);
+        newMasterCommit.saveCommit();
+        changeMaster(newMasterCommit.getUID());
+    }
+    /** let master points to new commit. */
     public static void changeMaster(String commitUID) {
         writeContents(MASTER, commitUID);
     }
@@ -104,7 +124,7 @@ public class Repository {
      * the current commit.If identical, return true, else false.
      */
     public static Boolean sameFileAndMaster(Commit masterCommit, String filename, String newBlobName) {
-        HashMap<String, String> commitFileToBlob = masterCommit.getfileToBlob();
+        HashMap<String, String> commitFileToBlob = masterCommit.getFileToBlob();
         if (commitFileToBlob.containsKey(filename)) {
             String blobName = commitFileToBlob.get(filename);
             if (blobName.equals(newBlobName)) {
@@ -112,6 +132,11 @@ public class Repository {
             }
         }
         return false;
+    }
+    /** return the newest commit, which is pointed by master. */
+    public static Commit getMasterCommit() {
+        String masterCommitUID = readContentsAsString(MASTER);
+        return readObject(join(OBJECT_DIR, masterCommitUID), Commit.class);
     }
 
 }

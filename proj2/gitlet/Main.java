@@ -25,13 +25,15 @@ public class Main {
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
-                checkArgs(args,2);
+                checkArgs(args, 2);
                 checkInitialized();
                 add(args[1]);
                 break;
             // TODO: FILL THE REST IN
             case "commit":
-
+                checkArgs(args, 2);
+                checkInitialized();
+                commit(args[1]);
                 break;
 
             default:
