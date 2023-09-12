@@ -18,11 +18,9 @@ import static gitlet.Utils.*;
 public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
-     *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
-     *
      * A commit consist of a log message, timestamp, a mapping of file
      * names to blob references, a parent reference, and (for merges) a second parent reference.
      */
@@ -60,8 +58,7 @@ public class Commit implements Serializable {
 
     private String dateToString(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        String str = sdf.format(date);
-        return str;
+        return sdf.format(date);
     }
     private String generateUID() {
         return sha1(message, timeStamp, fileToBlob.toString(), parents.toString());
