@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 
+import static gitlet.MyHelperFunction.*;
 import static gitlet.Repository.GITLET_DIR;
 import static gitlet.Repository.OBJECT_DIR;
 import static gitlet.Utils.*;
@@ -16,16 +17,28 @@ import static gitlet.Utils.*;
  *  @author Ysnnnn
  */
 public class Blob implements Serializable {
-    /** file content is a sha1 String */
-    String fileContent;
+    /** file content is byte array */
+    private byte[] fileContent;
 
     public Blob(String fileName) {
-        File file =join(GITLET_DIR,fileName);
-        fileContent = readContentsAsString(file);
+        File file = join(GITLET_DIR,fileName);
+        if (!file.exists()) {
+            exit("File does not exist.");
+        }
+        fileContent = readContents(file);
     }
-    void saveBlob() {
-        File blobFile = join(OBJECT_DIR, sha1(this.fileContent));
-        writeObject(blobFile, this.fileContent);
+    public String saveBlob() {
+        String blobName = getBlobName();
+        File blobFile = join(OBJECT_DIR, blobName);
+        writeObject(blobFile, this);
+        return blobName;
+    }
+    public String getBlobName() {
+        String blobName = sha1(this.fileContent);
+        return blobName;
+    }
+    public byte[] getFileContent() {
+        return fileContent;
     }
 }
 

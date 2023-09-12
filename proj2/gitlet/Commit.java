@@ -82,4 +82,7 @@ public class Commit implements Serializable {
     public String getTimeStamp() {
         return this.timeStamp;
     }
+    public HashMap getfileToBlob() {
+        return this.fileToBlob;
+    }
 }

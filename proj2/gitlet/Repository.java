@@ -1,6 +1,9 @@
 package gitlet;
 
 import java.io.File;
+import java.util.HashMap;
+
+import static gitlet.StageArea.*;
 import static gitlet.Utils.*;
 import static gitlet.MyHelperFunction.*;
 
@@ -39,11 +42,14 @@ public class Repository {
     /** refs directory to store heads. */
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
     /** heads directory to store master. */
-    public static final File HEADS_DIR = join(GITLET_DIR, "heads");
+    public static final File HEADS_DIR = join(REFS_DIR, "heads");
+    /** master file */
+    public static final File MASTER = join(HEADS_DIR, "master");
     /** addStage File */
     public static final File ADD_STAGE = join(GITLET_DIR, "addStage");
     /** removeStage File */
     public static final File REMOVE_STAGE = join(GITLET_DIR, "removeStage");
+
     /* TODO: fill in the rest of this class. */
     static void init() {
         if (GITLET_DIR.exists()) {
@@ -58,20 +64,54 @@ public class Repository {
         changeMaster(initCommit.getUID());
     }
     static void add(String filename) {
-        Blob blob = new Blob(filename);
-        blob.saveBlob();
-        StageArea addStage= getAddStage();
+        /** If the current working version of the file is identical to the version in
+         * the current commit, do not stage it to be added, and remove it from the staging
+         * area if it is already there (as can happen when a file is changed, added, and
+         * then changed back to it’s original version).
+         */
+
+        /** creat a new blob for current file and get blobName
+         */
+        Blob newBlob = new Blob(filename);
+        String newBlobName = newBlob.getBlobName();
+        /** get addStage */
+        StageArea addStage = getAddStage();
+        /** judge if the current working version of the file is identical to the version in
+         * the current commit
+         */
+        String masterCommitUID = readContentsAsString(MASTER);
+        Commit masterCommit = readObject(join(OBJECT_DIR, masterCommitUID), Commit.class);
+        if (!sameFileAndMaster(masterCommit, filename, newBlobName)) {
+            /** add file to addition stage */
+            addStage.addFileToBlob(filename, newBlobName);
+            addStage.saveStage(ADD_STAGE);
+        } else {
+            /** do not stage it to be added, and remove it from the staging
+             * area if it is already there */
+            addStage.removeFileToBlob(filename);
+        }
+
     }
+    /** let master points to new commit */
     public static void changeMaster(String commitUID) {
-        writeContents(join(HEADS_DIR, "master"), commitUID);
+        writeContents(MASTER, commitUID);
     }
     public static void writeHEAD(String masterRef) {
         writeContents(join(GITLET_DIR, "HEAD"), "refs/heads/master");
     }
-    static StageArea getAddStage() {
-        if (!ADD_STAGE.exists()) {
-            return new StageArea();
+
+    /** judge if the current working version of the file is identical to the version in
+     * the current commit.If identical, return true, else false.
+     */
+    public static Boolean sameFileAndMaster(Commit masterCommit, String filename, String newBlobName) {
+        HashMap<String, String> commitFileToBlob = masterCommit.getfileToBlob();
+        if (commitFileToBlob.containsKey(filename)) {
+            String blobName = commitFileToBlob.get(filename);
+            if (blobName.equals(newBlobName)) {
+                return true;
+            }
         }
-        return readObject(ADD_STAGE, StageArea.class);
+        return false;
     }
+
 }
