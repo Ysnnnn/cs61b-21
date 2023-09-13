@@ -41,6 +41,8 @@ public class Repository {
     public static final File OBJECT_DIR = join(GITLET_DIR, "objects");
     /** refs directory to store heads. */
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
+    /** HEAD file */
+    public static final File HEAD_FILE = join(GITLET_DIR, "HEAD");
     /** heads directory to store master. */
     public static final File HEADS_DIR = join(REFS_DIR, "heads");
     /** master file */
@@ -62,6 +64,8 @@ public class Repository {
         Commit initCommit = new Commit();
         initCommit.saveCommit();
         changeMaster(initCommit.getUID());
+        changeHEAD("master");
+
     }
     static void add(String filename) {
         /* If the current working version of the file is identical to the version in
@@ -82,8 +86,8 @@ public class Repository {
         /* judge if the current working version of the file is identical to the version in
          * the current commit
          */
-        Commit masterCommit = getMasterCommit();
-        if (!sameFileAndMaster(masterCommit, filename, newBlobName)) {
+        Commit headCommit = getHeadCommit();
+        if (!sameFileAndMaster(headCommit, filename, newBlobName)) {
             /* add file to addition stage */
             addStage.addFileToBlob(filename, newBlobName);
             addStage.saveStage(ADD_STAGE);
@@ -103,9 +107,9 @@ public class Repository {
         if (stageIsEmpty(addStage)) {
             exit("No changes added to the commit.");
         }
-        Commit masterCommit = getMasterCommit();
-        HashMap<String, String> fileToBlob = updateAddStageToCommit(addStage, rmStage, masterCommit);
-        String masterUID = masterCommit.getUID();
+        Commit headCommit = getHeadCommit();
+        HashMap<String, String> fileToBlob = updateAddStageToCommit(addStage, rmStage, headCommit);
+        String masterUID = headCommit.getUID();
         List<String> parents = new ArrayList<>();
         parents.add(masterUID);
         Commit newMasterCommit = new Commit(message, new Date(), fileToBlob, parents);
@@ -123,8 +127,8 @@ public class Repository {
         tracked in the current commit, stage it for removal and remove the file from
         the working directory if the user has not already done so.  If the file is
         neither staged nor tracked by the head commit, print the error message.*/
-        Commit masterCommit = getMasterCommit();
-        Boolean fileInCommit = masterCommit.getFileToBlob().containsKey(fileName);
+        Commit headCommit = getHeadCommit();
+        Boolean fileInCommit = headCommit.getFileToBlob().containsKey(fileName);
         StageArea addStage = getAddStage();
         Boolean fileInAddStage = addStage.getFiletToBlob().containsKey(fileName);
         StageArea rmStage = getRemoveStage();
@@ -135,17 +139,30 @@ public class Repository {
             addStage.removeFileToBlob(fileName);
         }
         if (fileInCommit) {
-            rmStage.getFiletToBlob().put(fileName, masterCommit.getFileToBlob().get(fileName));
+            rmStage.getFiletToBlob().put(fileName, headCommit.getFileToBlob().get(fileName));
             File file = join(CWD, fileName);
             restrictedDelete(file);
+        }
+    }
+    static void log() {
+        Commit headCommit = getHeadCommit();
+        List<String> parents = headCommit.getParents();
+        while (!parents.isEmpty()) {
+            System.out.println("===");
+            if(parents.size() == 2) {
+                System.out.println("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7));
+            }
+            System.out.println(headCommit.getTimeStamp());
+            System.out.println(headCommit.getMessage());
+            parents = getCommit(parents.get(0)).getParents();
         }
     }
     /** let master points to new commit. */
     public static void changeMaster(String commitUID) {
         writeContents(MASTER, commitUID);
     }
-    public static void writeHEAD(String masterRef) {
-        writeContents(join(GITLET_DIR, "HEAD"), "refs/heads/master");
+    public static void changeHEAD(String branchName) {
+        writeContents(HEAD_FILE, branchName);
     }
 
     /** judge if the current working version of the file is identical to the version in
@@ -159,10 +176,17 @@ public class Repository {
         }
         return false;
     }
-    /** return the newest commit, which is pointed by master. */
-    public static Commit getMasterCommit() {
-        String masterCommitUID = readContentsAsString(MASTER);
+    /** return the newest  commit on current branch. */
+    public static Commit getHeadCommit() {
+        String head = readContentsAsString(HEAD_FILE);
+        File currentHead = join(HEADS_DIR, head);
+        String masterCommitUID = readContentsAsString(currentHead);
         return readObject(join(OBJECT_DIR, masterCommitUID), Commit.class);
+    }
+    /** return Commit by UID. */
+    public static Commit getCommit(String UID) {
+        File UIDFile = join(OBJECT_DIR, UID);
+        return readObject(UIDFile, Commit.class);
     }
 
 }

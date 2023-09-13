@@ -40,7 +40,11 @@ public class Main {
                 checkInitialized();
                 rm(args[1]);
                 break;
-
+            case "log":
+                checkArgs(args, 1);
+                checkInitialized();
+                log();
+                break;
             default:
                 exit("No command with that name exists.");
         }

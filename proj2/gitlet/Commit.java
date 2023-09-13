@@ -82,4 +82,7 @@ public class Commit implements Serializable {
     public HashMap<String, String> getFileToBlob() {
         return this.fileToBlob;
     }
+    public List<String> getParents() {
+        return this.parents;
+    }
 }
