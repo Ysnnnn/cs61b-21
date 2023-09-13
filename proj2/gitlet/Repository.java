@@ -16,7 +16,7 @@ import static gitlet.MyHelperFunction.*;
  *  @author TODO
  */
 public class Repository {
-    /**
+    /*
      * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
@@ -64,28 +64,31 @@ public class Repository {
         changeMaster(initCommit.getUID());
     }
     static void add(String filename) {
-        /** If the current working version of the file is identical to the version in
+        /* If the current working version of the file is identical to the version in
          * the current commit, do not stage it to be added, and remove it from the staging
          * area if it is already there (as can happen when a file is changed, added, and
          * then changed back to it’s original version).
          */
 
-        /** creat a new blob for current file and get blobName
+        /* creat a new blob for current file and get blobName
          */
         Blob newBlob = new Blob(filename);
         String newBlobName = newBlob.getBlobName();
-        /** get addStage */
+        /* get removeStage and remove the file from removeStage if it is staged. */
+        StageArea removeStage = getRemoveStage();
+        removeStage.removeFileToBlob(filename);
+        /* get addStage */
         StageArea addStage = getAddStage();
-        /** judge if the current working version of the file is identical to the version in
+        /* judge if the current working version of the file is identical to the version in
          * the current commit
          */
         Commit masterCommit = getMasterCommit();
         if (!sameFileAndMaster(masterCommit, filename, newBlobName)) {
-            /** add file to addition stage */
+            /* add file to addition stage */
             addStage.addFileToBlob(filename, newBlobName);
             addStage.saveStage(ADD_STAGE);
         } else {
-            /** do not stage it to be added, and remove it from the staging
+            /* do not stage it to be added, and remove it from the staging
              * area if it is already there */
             addStage.removeFileToBlob(filename);
         }
@@ -96,21 +99,46 @@ public class Repository {
             exit("Please enter a commit message.");
         }
         StageArea addStage = getAddStage();
+        StageArea rmStage = getRemoveStage();
         if (stageIsEmpty(addStage)) {
             exit("No changes added to the commit.");
         }
         Commit masterCommit = getMasterCommit();
-        HashMap<String, String> fileToBlob = masterCommit.getFileToBlob();
+        HashMap<String, String> fileToBlob = updateAddStageToCommit(addStage, rmStage, masterCommit);
         String masterUID = masterCommit.getUID();
-        HashMap stageFileToBlob = addStage.getFiletToBlob();
-        for (Object fileName : stageFileToBlob.keySet()) {
-            fileToBlob.put((String)fileName, (String) stageFileToBlob.get(fileName));
-        }
         List<String> parents = new ArrayList<>();
         parents.add(masterUID);
         Commit newMasterCommit = new Commit(message, new Date(), fileToBlob, parents);
         newMasterCommit.saveCommit();
         changeMaster(newMasterCommit.getUID());
+        addStage.clearStage();
+        addStage.saveStage(ADD_STAGE);
+        rmStage.clearStage();
+        rmStage.saveStage(REMOVE_STAGE);
+    }
+
+
+    static void rm(String fileName) {
+        /* Unstage the file if it is currently staged for addition. If the file is
+        tracked in the current commit, stage it for removal and remove the file from
+        the working directory if the user has not already done so.  If the file is
+        neither staged nor tracked by the head commit, print the error message.*/
+        Commit masterCommit = getMasterCommit();
+        Boolean fileInCommit = masterCommit.getFileToBlob().containsKey(fileName);
+        StageArea addStage = getAddStage();
+        Boolean fileInAddStage = addStage.getFiletToBlob().containsKey(fileName);
+        StageArea rmStage = getRemoveStage();
+        if (fileInCommit && fileInAddStage) {
+            exit("No reason to remove the file.");
+        }
+        if (fileInAddStage) {
+            addStage.removeFileToBlob(fileName);
+        }
+        if (fileInCommit) {
+            rmStage.getFiletToBlob().put(fileName, masterCommit.getFileToBlob().get(fileName));
+            File file = join(CWD, fileName);
+            restrictedDelete(file);
+        }
     }
     /** let master points to new commit. */
     public static void changeMaster(String commitUID) {
@@ -127,9 +155,7 @@ public class Repository {
         HashMap<String, String> commitFileToBlob = masterCommit.getFileToBlob();
         if (commitFileToBlob.containsKey(filename)) {
             String blobName = commitFileToBlob.get(filename);
-            if (blobName.equals(newBlobName)) {
-                return true;
-            }
+            return blobName.equals(newBlobName);
         }
         return false;
     }

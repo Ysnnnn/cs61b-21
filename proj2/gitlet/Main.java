@@ -35,6 +35,11 @@ public class Main {
                 checkInitialized();
                 commit(args[1]);
                 break;
+            case "rm":
+                checkArgs(args, 2);
+                checkInitialized();
+                rm(args[1]);
+                break;
 
             default:
                 exit("No command with that name exists.");
