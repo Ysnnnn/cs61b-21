@@ -164,7 +164,7 @@ public class Repository {
                         " " + commit.getParents().get(1).substring(0, 7));
             }
             System.out.println("Date: " + commit.getTimeStamp());
-            System.out.println(commit.getMessage());
+            System.out.println(commit.getMessage() + "\n");
             commit = getCommit(commit.getParents().get(0));
         } while (!commit.getParents().isEmpty());
     }
