@@ -1,8 +1,12 @@
 package gitlet;
 
+import org.checkerframework.checker.units.qual.C;
+
 import java.io.File;
 import java.util.*;
 
+import static gitlet.Blob.*;
+import static gitlet.Commit.*;
 import static gitlet.StageArea.*;
 import static gitlet.Utils.*;
 import static gitlet.MyHelperFunction.*;
@@ -24,7 +28,8 @@ public class Repository {
      * variable is used. We've provided two examples for you.
      *     .gitlet
      *      *      |--objects
-     *      *      |     |--commit and blob
+     *      *      |     |--blob
+     *      *      |     |--commit
      *      *      |--refs
      *      *      |    |--heads
      *      *      |         |--master
@@ -37,8 +42,12 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-    /** object directory to store commit and blob. */
+    /** object directory to store commit dir and blob dir. */
     public static final File OBJECT_DIR = join(GITLET_DIR, "objects");
+    /** commit directory */
+    public static final File COMMIT_DIR = join(GITLET_DIR, "commit");
+    /** blob directory */
+    public static final File BLOB_DIR = join(GITLET_DIR, "blob");
     /** refs directory to store heads. */
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
     /** HEAD file */
@@ -61,6 +70,8 @@ public class Repository {
         OBJECT_DIR.mkdir();
         REFS_DIR.mkdir();
         HEADS_DIR.mkdir();
+        COMMIT_DIR.mkdir();
+        BLOB_DIR.mkdir();
         Commit initCommit = new Commit();
         initCommit.saveCommit();
         changeMaster(initCommit.getUID());
@@ -78,6 +89,7 @@ public class Repository {
          */
         Blob newBlob = new Blob(filename);
         String newBlobName = newBlob.getBlobName();
+        newBlob.saveBlob();
         /* get removeStage and remove the file from removeStage if it is staged. */
         StageArea removeStage = getRemoveStage();
         removeStage.removeFileToBlob(filename);
@@ -87,7 +99,7 @@ public class Repository {
          * the current commit
          */
         Commit headCommit = getHeadCommit();
-        if (!sameFileAndMaster(headCommit, filename, newBlobName)) {
+        if (!sameFileAndHead(headCommit, filename, newBlobName)) {
             /* add file to addition stage */
             addStage.addFileToBlob(filename, newBlobName);
             addStage.saveStage(ADD_STAGE);
@@ -158,16 +170,39 @@ public class Repository {
         } while (!commit.getParents().isEmpty());
     }
     static void globalLog() {
-        List<String> allCommit = plainFilenamesIn(OBJECT_DIR);
+        List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
         for (String commitName : allCommit) {
-            Commit commit = readObject(join(OBJECT_DIR, commitName), Commit.class);
+            Commit commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
             printCommit(commit);
         }
     }
+    static void checkout(String filename) {
+        Commit commit = getHeadCommit();
+        String blobName = commit.getFileToBlob().get(filename);
+        if (blobName == null) {
+            exit("File does not exist in that commit.");
+        }
+        Blob blob = getBlob(blobName);
+        byte[] content = blob.getFileContent();
+        writeContents(join(CWD, filename), content);
+    }
+    static void checkout(String commitUID, String filename) {
+        Commit commit = getCommit(commitUID);
+        String blobName = commit.getFileToBlob().get(filename);
+        if (blobName == null) {
+            exit("File does not exist in that commit.");
+        }
+        Blob blob = getBlob(blobName);
+        byte[] content = blob.getFileContent();
+        writeContents(join(CWD, filename), content);
+
+    }
+
     /** let master points to new commit. */
     public static void changeMaster(String commitUID) {
         writeContents(MASTER, commitUID);
     }
+    /** HEAD file save the name of the current branch. */
     public static void changeHEAD(String branchName) {
         writeContents(HEAD_FILE, branchName);
     }
@@ -175,34 +210,14 @@ public class Repository {
     /** judge if the current working version of the file is identical to the version in
      * the current commit.If identical, return true, else false.
      */
-    public static Boolean sameFileAndMaster(Commit masterCommit, String filename, String newBlobName) {
-        HashMap<String, String> commitFileToBlob = masterCommit.getFileToBlob();
+    public static Boolean sameFileAndHead(Commit headCommit, String filename, String newBlobName) {
+        HashMap<String, String> commitFileToBlob = headCommit.getFileToBlob();
         if (commitFileToBlob.containsKey(filename)) {
             String blobName = commitFileToBlob.get(filename);
             return blobName.equals(newBlobName);
         }
         return false;
     }
-    /** return the newest  commit on current branch. */
-    public static Commit getHeadCommit() {
-        String head = readContentsAsString(HEAD_FILE);
-        File currentHead = join(HEADS_DIR, head);
-        String masterCommitUID = readContentsAsString(currentHead);
-        return readObject(join(OBJECT_DIR, masterCommitUID), Commit.class);
-    }
-    /** return Commit by UID. */
-    public static Commit getCommit(String UID) {
-        File UIDFile = join(OBJECT_DIR, UID);
-        return readObject(UIDFile, Commit.class);
-    }
-    public static void printCommit(Commit commit) {
-        System.out.println("===");
-        if (commit.getParents().size() == 2) {
-            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
-                    " " + commit.getParents().get(1).substring(0, 7));
-        }
-        System.out.println(commit.getTimeStamp());
-        System.out.println(commit.getMessage());
-    }
+
 
 }

@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static gitlet.Repository.OBJECT_DIR;
+import static gitlet.MyHelperFunction.*;
+import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 
 /** Represents a gitlet commit object.
@@ -65,7 +66,7 @@ public class Commit implements Serializable {
     }
 
     private File generateFileName() {
-        return join(OBJECT_DIR, UID);
+        return join(COMMIT_DIR, UID);
     }
     public void saveCommit() {
         writeObject(CommitFileName, this);
@@ -84,5 +85,29 @@ public class Commit implements Serializable {
     }
     public List<String> getParents() {
         return this.parents;
+    }
+    /** return the newest  commit on current branch. */
+    public static Commit getHeadCommit() {
+        String head = readContentsAsString(HEAD_FILE);
+        File currentHead = join(HEADS_DIR, head);
+        String masterCommitUID = readContentsAsString(currentHead);
+        return readObject(join(COMMIT_DIR, masterCommitUID), Commit.class);
+    }
+    /** return Commit by UID. */
+    public static Commit getCommit(String UID) {
+        File UIDFile = join(COMMIT_DIR, UID);
+        if (!UIDFile.exists()) {
+            exit("No commit with that id exists.");
+        }
+        return readObject(UIDFile, Commit.class);
+    }
+    public static void printCommit(Commit commit) {
+        System.out.println("===");
+        if (commit.getParents().size() == 2) {
+            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
+                    " " + commit.getParents().get(1).substring(0, 7));
+        }
+        System.out.println(commit.getTimeStamp());
+        System.out.println(commit.getMessage());
     }
 }

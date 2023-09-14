@@ -28,7 +28,7 @@ public class Blob implements Serializable {
     }
     public String saveBlob() {
         String blobName = getBlobName();
-        File blobFile = join(OBJECT_DIR, blobName);
+        File blobFile = join(BLOB_DIR, blobName);
         writeObject(blobFile, this);
         return blobName;
     }
@@ -38,6 +38,10 @@ public class Blob implements Serializable {
     }
     public byte[] getFileContent() {
         return fileContent;
+    }
+    public static Blob getBlob(String blobName) {
+        File blobFIle = join(BLOB_DIR, blobName);
+        return readObject(blobFIle, Blob.class);
     }
 }
 
