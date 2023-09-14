@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 
 import static gitlet.MyHelperFunction.*;
-import static gitlet.Repository.GITLET_DIR;
-import static gitlet.Repository.OBJECT_DIR;
+import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 
 /** Represents a gitlet blob object.
@@ -21,7 +20,7 @@ public class Blob implements Serializable {
     private byte[] fileContent;
 
     public Blob(String fileName) {
-        File file = join(GITLET_DIR,fileName);
+        File file = join(CWD,fileName);
         if (!file.exists()) {
             exit("File does not exist.");
         }

@@ -145,16 +145,23 @@ public class Repository {
         }
     }
     static void log() {
-        Commit headCommit = getHeadCommit();
-        List<String> parents = headCommit.getParents();
-        while (!parents.isEmpty()) {
+        Commit commit = getHeadCommit();
+        do {
             System.out.println("===");
-            if(parents.size() == 2) {
-                System.out.println("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7));
+            if (commit.getParents().size() == 2) {
+                System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
+                        " " + commit.getParents().get(1).substring(0, 7));
             }
-            System.out.println(headCommit.getTimeStamp());
-            System.out.println(headCommit.getMessage());
-            parents = getCommit(parents.get(0)).getParents();
+            System.out.println(commit.getTimeStamp());
+            System.out.println(commit.getMessage());
+            commit = getCommit(commit.getParents().get(0));
+        } while (!commit.getParents().isEmpty());
+    }
+    static void globalLog() {
+        List<String> allCommit = plainFilenamesIn(OBJECT_DIR);
+        for (String commitName : allCommit) {
+            Commit commit = readObject(join(OBJECT_DIR, commitName), Commit.class);
+            printCommit(commit);
         }
     }
     /** let master points to new commit. */
@@ -187,6 +194,15 @@ public class Repository {
     public static Commit getCommit(String UID) {
         File UIDFile = join(OBJECT_DIR, UID);
         return readObject(UIDFile, Commit.class);
+    }
+    public static void printCommit(Commit commit) {
+        System.out.println("===");
+        if (commit.getParents().size() == 2) {
+            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
+                    " " + commit.getParents().get(1).substring(0, 7));
+        }
+        System.out.println(commit.getTimeStamp());
+        System.out.println(commit.getMessage());
     }
 
 }

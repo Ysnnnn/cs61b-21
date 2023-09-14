@@ -45,6 +45,10 @@ public class Main {
                 checkInitialized();
                 log();
                 break;
+            case "global-log":
+                checkArgs(args, 1);
+                checkInitialized();
+                globalLog();
             default:
                 exit("No command with that name exists.");
         }
