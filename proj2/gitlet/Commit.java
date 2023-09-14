@@ -58,7 +58,7 @@ public class Commit implements Serializable {
     }
 
     private String dateToString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.CHINA);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
         return sdf.format(date);
     }
     private String generateUID() {
