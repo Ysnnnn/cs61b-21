@@ -158,11 +158,12 @@ public class Repository {
         Commit commit = getHeadCommit();
         do {
             System.out.println("===");
+            System.out.println("commit " + commit.getUID());
             if (commit.getParents().size() == 2) {
                 System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
                         " " + commit.getParents().get(1).substring(0, 7));
             }
-            System.out.println(commit.getTimeStamp());
+            System.out.println("Date: " + commit.getTimeStamp());
             System.out.println(commit.getMessage());
             commit = getCommit(commit.getParents().get(0));
         } while (!commit.getParents().isEmpty());

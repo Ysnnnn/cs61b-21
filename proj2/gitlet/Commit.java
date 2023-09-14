@@ -58,7 +58,7 @@ public class Commit implements Serializable {
     }
 
     private String dateToString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.CHINA);
         return sdf.format(date);
     }
     private String generateUID() {
@@ -103,11 +103,12 @@ public class Commit implements Serializable {
     }
     public static void printCommit(Commit commit) {
         System.out.println("===");
+        System.out.println("commit " + commit.getUID());
         if (commit.getParents().size() == 2) {
             System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
                     " " + commit.getParents().get(1).substring(0, 7));
         }
-        System.out.println(commit.getTimeStamp());
+        System.out.println("Date: " + commit.getTimeStamp());
         System.out.println(commit.getMessage());
     }
 }
