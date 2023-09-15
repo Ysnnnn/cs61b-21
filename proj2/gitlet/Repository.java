@@ -43,9 +43,9 @@ public class Repository {
     /** object directory to store commit dir and blob dir. */
     public static final File OBJECT_DIR = join(GITLET_DIR, "objects");
     /** commit directory */
-    public static final File COMMIT_DIR = join(GITLET_DIR, "commit");
+    public static final File COMMIT_DIR = join(OBJECT_DIR, "commit");
     /** blob directory */
-    public static final File BLOB_DIR = join(GITLET_DIR, "blob");
+    public static final File BLOB_DIR = join(OBJECT_DIR, "blob");
     /** refs directory to store heads. */
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
     /** HEAD file */
@@ -156,17 +156,21 @@ public class Repository {
     }
     static void log() {
         Commit commit = getHeadCommit();
+        List<String> parents;
         do {
             System.out.println("===");
             System.out.println("commit " + commit.getUID());
-            if (commit.getParents().size() == 2) {
-                System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
-                        " " + commit.getParents().get(1).substring(0, 7));
+            parents = commit.getParents();
+            if (parents.size() == 2) {
+                System.out.println("Merge: " + parents.get(0).substring(0, 7) +
+                        " " + parents.get(1).substring(0, 7));
             }
             System.out.println("Date: " + commit.getTimeStamp());
             System.out.println(commit.getMessage() + "\n");
-            commit = getCommit(commit.getParents().get(0));
-        } while (!commit.getParents().isEmpty());
+            if (parents.size() != 0) {
+                commit = getCommit(parents.get(0));
+            }
+        } while (parents.size() != 0);
     }
     static void globalLog() {
         List<String> allCommit = plainFilenamesIn(COMMIT_DIR);

@@ -49,7 +49,7 @@ public class Main {
                 checkArgs(args, 1);
                 checkInitialized();
                 globalLog();
-            case "check":
+            case "checkout":
                 switch(args.length) {
                     case 3:
                         if (!args[1].equals("--")) {
@@ -64,8 +64,7 @@ public class Main {
                         checkout(args[1], args[3]);
                         break;
                 }
-                checkInitialized();
-
+                break;
             default:
                 exit("No command with that name exists.");
         }
