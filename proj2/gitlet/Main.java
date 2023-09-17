@@ -49,6 +49,12 @@ public class Main {
                 checkArgs(args, 1);
                 checkInitialized();
                 globalLog();
+                break;
+            case "find":
+                checkArgs(args, 2);
+                checkInitialized();
+                find(args[1]);
+                break;
             case "checkout":
                 switch(args.length) {
                     case 3:
@@ -63,7 +69,14 @@ public class Main {
                         }
                         checkout(args[1], args[3]);
                         break;
+                    case 2:
+                    //TODO
                 }
+                break;
+            case "branch":
+                checkArgs(args, 2);
+                checkInitialized();
+                branch(args[1]);
                 break;
             default:
                 exit("No command with that name exists.");
