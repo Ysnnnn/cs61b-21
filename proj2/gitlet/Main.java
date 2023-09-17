@@ -70,7 +70,7 @@ public class Main {
                         checkout(args[1], args[3]);
                         break;
                     case 2:
-                    //TODO
+                        checkoutBranch(args[1]);
                 }
                 break;
             case "branch":

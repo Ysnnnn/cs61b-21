@@ -187,7 +187,6 @@ public class Repository {
              if(commit.getMessage().equals(commitMessage)) {
                  System.out.println(commit.getUID());
              }
-
         }
         if (commit == null) {
             exit("Found no commit with that message.");
@@ -220,7 +219,34 @@ public class Repository {
         Blob blob = getBlob(blobName);
         byte[] content = blob.getFileContent();
         writeContents(join(CWD, filename), content);
-
+    }
+    static void checkoutBranch(String branchName) {
+        String currentBranch = readContentsAsString(HEAD_FILE);
+        if (branchName.equals(currentBranch)) {
+            exit("No need to checkout the current branch.");
+        }
+        List<String> branch = plainFilenamesIn(HEADS_DIR);
+        if (!branch.contains(branch)) {
+            exit("No such branch exists.");
+        }
+        List<String> untrackedFile = getUntrackedFile();
+        if (!untrackedFile.isEmpty()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
+        switchHead(branchName);
+        Commit commit = getHeadCommit();
+        HashMap<String, String> fileToBlob = commit.getFileToBlob();
+        List<String> currentFile = plainFilenamesIn(CWD);
+        for (String file : fileToBlob.keySet()) {
+            Blob blob = readObject(join(BLOB_DIR, fileToBlob.get(file)), Blob.class);
+            writeContents(join(CWD, file), blob.getFileContent());
+        }
+        for (String file : currentFile) {
+            if (!fileToBlob.containsKey(file)) {
+                restrictedDelete(join(CWD, file));
+            }
+        }
+        clearBothStage();
     }
 
     /** set branch head to commit by branch name and save current branch name in HEAD */
@@ -252,6 +278,30 @@ public class Repository {
         }
         return false;
     }
-
+    /** return List of untracked files name in current branch. */
+    static List<String> getUntrackedFile(){
+        List<String> untrackedFile = new ArrayList<>();
+        Commit commit = getHeadCommit();
+        HashMap<String , String> fileToBlob= commit.getFileToBlob();
+        List<String> currentFile = plainFilenamesIn(CWD);
+        for (String file :currentFile) {
+            if (!fileToBlob.containsKey(file)) {
+                untrackedFile.add(file);
+            }
+        }
+        return untrackedFile;
+    }
+    /** change the branch of head points to, namely save current branch name in HEAD_FILE */
+    static void switchHead(String branchName) {
+        writeContents(HEAD_FILE, branchName);
+    }
+    static void clearBothStage() {
+        StageArea addStage = getAddStage();
+        StageArea rmStage = getRemoveStage();
+        addStage.clearStage();
+        rmStage.clearStage();
+        addStage.saveStage(ADD_STAGE);
+        rmStage.saveStage(REMOVE_STAGE);
+    }
 
 }
