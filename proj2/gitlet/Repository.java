@@ -99,13 +99,13 @@ public class Repository {
         if (!sameFileAndHead(headCommit, filename, newBlobName)) {
             /* add file to addition stage */
             addStage.addFileToBlob(filename, newBlobName);
-            addStage.saveStage(ADD_STAGE);
         } else {
             /* do not stage it to be added, and remove it from the staging
              * area if it is already there */
             addStage.removeFileToBlob(filename);
         }
-
+        addStage.saveStage(ADD_STAGE);
+        removeStage.saveStage(REMOVE_STAGE);
     }
     static void commit(String message) {
         if (message == null) {
