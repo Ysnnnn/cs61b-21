@@ -253,8 +253,10 @@ public class Repository {
                         modifiedFiles.add(file);
                     }
                 } else {
-                    if (!sameFileAndHead(getHeadCommit(), file, fileSHA1)) {
-                        modifiedFiles.add(file);
+                    if (getHeadCommit().getFileToBlob().containsKey(file)) {
+                        if (!sameFileAndHead(getHeadCommit(), file, fileSHA1)) {
+                            modifiedFiles.add(file);
+                        }
                     }
                 }
             }
