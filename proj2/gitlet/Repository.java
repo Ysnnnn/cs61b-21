@@ -142,7 +142,7 @@ public class Repository {
         StageArea addStage = getAddStage();
         Boolean fileInAddStage = addStage.getFiletToBlob().containsKey(fileName);
         StageArea rmStage = getRemoveStage();
-        if (fileInCommit && fileInAddStage) {
+        if (!fileInCommit && !fileInAddStage) {
             exit("No reason to remove the file.");
         }
         if (fileInAddStage) {
