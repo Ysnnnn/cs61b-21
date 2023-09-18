@@ -198,7 +198,6 @@ public class Repository {
         Blob blob = getBlob(blobName);
         byte[] content = blob.getFileContent();
         writeContents(join(CWD, filename), content);
-
     }
 
     /** let master points to new commit. */
