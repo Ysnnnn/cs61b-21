@@ -109,6 +109,6 @@ public class Commit implements Serializable {
                     " " + commit.getParents().get(1).substring(0, 7));
         }
         System.out.println("Date: " + commit.getTimeStamp());
-        System.out.println(commit.getMessage());
+        System.out.println(commit.getMessage() + "\n");
     }
 }
