@@ -147,11 +147,13 @@ public class Repository {
         }
         if (fileInAddStage) {
             addStage.removeFileToBlob(fileName);
+            addStage.saveStage(ADD_STAGE);
         }
         if (fileInCommit) {
             rmStage.getFiletToBlob().put(fileName, headCommit.getFileToBlob().get(fileName));
             File file = join(CWD, fileName);
             restrictedDelete(file);
+            rmStage.saveStage(REMOVE_STAGE);
         }
     }
     static void log() {
