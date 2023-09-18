@@ -86,7 +86,7 @@ public class Commit implements Serializable {
     public List<String> getParents() {
         return this.parents;
     }
-    /** return the newest  commit on current branch. */
+    /** return the newest  commit on current branch, which is pointed by head. */
     public static Commit getHeadCommit() {
         String head = readContentsAsString(HEAD_FILE);
         File currentHead = join(HEADS_DIR, head);
