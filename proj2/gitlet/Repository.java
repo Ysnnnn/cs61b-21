@@ -108,12 +108,12 @@ public class Repository {
         removeStage.saveStage(REMOVE_STAGE);
     }
     static void commit(String message) {
-        if (message == null) {
+        if (message.isEmpty()) {
             exit("Please enter a commit message.");
         }
         StageArea addStage = getAddStage();
         StageArea rmStage = getRemoveStage();
-        if (stageIsEmpty(addStage)) {
+        if (stageIsEmpty(addStage) && stageIsEmpty(rmStage)) {
             exit("No changes added to the commit.");
         }
         Commit headCommit = getHeadCommit();
