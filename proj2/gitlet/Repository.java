@@ -184,15 +184,17 @@ public class Repository {
     }
     static void find(String commitMessage) {
         List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
-        Commit commit = null;
+        Commit commit;
+        Boolean find = false;
         assert allCommit != null;
         for (String commitName : allCommit) {
              commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
              if(commit.getMessage().equals(commitMessage)) {
                  System.out.println(commit.getUID());
+                 find = true;
              }
         }
-        if (commit == null) {
+        if (!find) {
             exit("Found no commit with that message.");
         }
     }
