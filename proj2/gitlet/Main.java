@@ -82,6 +82,14 @@ public class Main {
                 checkInitialized();
                 branch(args[1]);
                 break;
+            case "rm-branch":
+                checkArgs(args, 2);
+                checkInitialized();
+                rmBranch(args[1]);
+            case "reset":
+                checkArgs(args, 2);
+                checkInitialized();
+                reset(args[1]);
             default:
                 exit("No command with that name exists.");
         }

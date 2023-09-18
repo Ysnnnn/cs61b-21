@@ -287,9 +287,19 @@ public class Repository {
         }
         System.out.println("\n");
     }
-    static  void branch(String branchName) {
+    static void branch(String branchName) {
         judgeBranchExist(branchName);
         setBranchHead2Commit(branchName, getHeadCommit().getUID());
+    }
+    static void rmBranch(String branchName) {
+        if (branchName.equals(getCurBranch())) {
+            exit("Cannot remove the current branch.");
+        }
+        File branch = join(HEADS_DIR, branchName);
+        if (!branch.exists()) {
+            exit("A branch with that name does not exist.");
+        }
+        restrictedDelete(branch);
     }
     static void checkout(String filename) {
         Commit commit = getHeadCommit();
@@ -341,6 +351,30 @@ public class Repository {
         }
         clearBothStage();
     }
+    static void reset(String commitUID) {
+        List<String> untrackedFile = getUntrackedFile();
+        if (!untrackedFile.isEmpty()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
+        Commit commit = getCommit(commitUID);
+        List<String> curFiles = plainFilenamesIn(CWD);
+        //clear CWD
+        if (!curFiles.isEmpty()) {
+            for (String file : curFiles) {
+                restrictedDelete(join(CWD, file));
+            }
+        }
+        //put file tracked in commit to CWD
+        Set<String> trackedFiles = commit.getFileToBlob().keySet();
+        if (!trackedFiles.isEmpty()) {
+            for (String file : trackedFiles) {
+                Blob blob = readObject(join(BLOB_DIR, commit.getFileToBlob().get(file)), Blob.class);
+                byte[] fileContent = blob.getFileContent();
+                writeContents(join(CWD, file), fileContent);
+            }
+        }
+        clearBothStage();
+    }
 
     /** set branch head to commit by branch name and save current branch name in HEAD */
     static void setBranchHead2Commit(String branchHeadName, String commitUID) {
@@ -384,7 +418,6 @@ public class Repository {
                 }
             }
         }
-
         return untrackedFile;
     }
     /** change the branch of head points to, namely save current branch name in HEAD_FILE */
