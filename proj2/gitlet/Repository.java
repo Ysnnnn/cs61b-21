@@ -174,6 +174,7 @@ public class Repository {
     }
     static void globalLog() {
         List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
+        assert allCommit != null;
         for (String commitName : allCommit) {
             Commit commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
             printCommit(commit);
@@ -182,6 +183,7 @@ public class Repository {
     static void find(String commitMessage) {
         List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
         Commit commit = null;
+        assert allCommit != null;
         for (String commitName : allCommit) {
              commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
              if(commit.getMessage().equals(commitMessage)) {
@@ -192,9 +194,98 @@ public class Repository {
             exit("Found no commit with that message.");
         }
     }
-    //TODO when finish branch check branch
     static  void status() {
-
+        printStatusHeader("Branches");
+        List<String> branches = plainFilenamesIn(HEADS_DIR);
+        if (branches != null) {
+            Collections.sort(branches);
+        }
+        assert branches != null;
+        for (String branch : branches) {
+            if (branch.equals(getCurBranch())) {
+                System.out.print("*");
+            }
+            System.out.println(branch);
+        }
+        System.out.println("\n");
+        //
+        printStatusHeader("Staged Files");
+        StageArea addStage = getAddStage();
+        HashMap<String, String> addFileToBlob = addStage.getFiletToBlob();
+        Set<String> stagedFilesSet = addFileToBlob.keySet();
+        List<String> stagedFiles = new ArrayList<>(stagedFilesSet);
+        Collections.sort(stagedFiles);
+        for (String file : stagedFiles) {
+            System.out.println(file);
+        }
+        System.out.println("\n");
+        //
+        printStatusHeader("Removed Files");
+        StageArea rmStage = getRemoveStage();
+        HashMap<String, String> rmFileToBlob = rmStage.getFiletToBlob();
+        Set<String> removedFilesSet = rmFileToBlob.keySet();
+        List<String> removedFiles = new ArrayList<>(removedFilesSet);
+        Collections.sort(removedFiles);
+        for (String file : removedFiles) {
+            System.out.println(file);
+        }
+        System.out.println("\n");
+        //
+        printStatusHeader("Modifications Not Staged For Commit");
+        List<String> files = plainFilenamesIn(CWD);
+        List<String> modifiedFiles = new ArrayList<>();
+        Set<String> deletedFilesSet = new HashSet<>();
+        List<String> untrackedFiles = new ArrayList<>();
+        Commit commit = getHeadCommit();
+        HashMap<String, String> fileToBlob = commit.getFileToBlob();
+        //judge if current files are modified or untracked.
+        if (files != null) {
+            for (String file : files) {
+                byte[] fileContent = readContents(join(CWD, file));
+                String fileSHA1 = sha1(fileContent);
+                if (!fileToBlob.containsKey(file) && !stagedFiles.contains(file)) {
+                    untrackedFiles.add(file);
+                }
+                if (stagedFiles.contains(file)) {
+                    if (!addFileToBlob.get(file).equals(fileSHA1)) {
+                        modifiedFiles.add(file);
+                    }
+                } else {
+                    if (!sameFileAndHead(getHeadCommit(), file, fileSHA1)) {
+                        modifiedFiles.add(file);
+                    }
+                }
+            }
+        }
+        //find the deleted file
+        for (String stagedFile : stagedFiles) {
+            if (!fileExist(stagedFile)) {
+                deletedFilesSet.add(stagedFile);
+            }
+        }
+        for (String file : fileToBlob.keySet()) {
+            if (!fileExist(file) && !removedFilesSet.contains(file)) {
+                deletedFilesSet.add(file);
+            }
+        }
+        List<String> deletedFiles = new ArrayList<>(deletedFilesSet);
+        List<String> combinedList = new ArrayList<>();
+        combinedList.addAll(deletedFiles);
+        combinedList.addAll(modifiedFiles);
+        Collections.sort(combinedList);
+        for (String file : combinedList) {
+            if (deletedFiles.contains(file)) {
+                System.out.println(file + "(deleted)");
+            } else {
+                System.out.println(file + "(modified)");
+            }
+        }
+        System.out.println("\n");
+        printStatusHeader("Untracked Files");
+        for (String file : untrackedFiles) {
+            System.out.println(file);
+        }
+        System.out.println("\n");
     }
     static  void branch(String branchName) {
         judgeBranchExist(branchName);
@@ -226,7 +317,7 @@ public class Repository {
             exit("No need to checkout the current branch.");
         }
         List<String> branch = plainFilenamesIn(HEADS_DIR);
-        if (!branch.contains(branch)) {
+        if (!branch.contains(branchName)) {
             exit("No such branch exists.");
         }
         List<String> untrackedFile = getUntrackedFile();
@@ -241,9 +332,11 @@ public class Repository {
             Blob blob = readObject(join(BLOB_DIR, fileToBlob.get(file)), Blob.class);
             writeContents(join(CWD, file), blob.getFileContent());
         }
-        for (String file : currentFile) {
-            if (!fileToBlob.containsKey(file)) {
-                restrictedDelete(join(CWD, file));
+        if (currentFile != null) {
+            for (String file : currentFile) {
+                if (!fileToBlob.containsKey(file)) {
+                    restrictedDelete(join(CWD, file));
+                }
             }
         }
         clearBothStage();
@@ -284,11 +377,14 @@ public class Repository {
         Commit commit = getHeadCommit();
         HashMap<String , String> fileToBlob= commit.getFileToBlob();
         List<String> currentFile = plainFilenamesIn(CWD);
-        for (String file :currentFile) {
-            if (!fileToBlob.containsKey(file)) {
-                untrackedFile.add(file);
+        if (currentFile != null) {
+            for (String file :currentFile) {
+                if (!fileToBlob.containsKey(file)) {
+                    untrackedFile.add(file);
+                }
             }
         }
+
         return untrackedFile;
     }
     /** change the branch of head points to, namely save current branch name in HEAD_FILE */
@@ -302,6 +398,19 @@ public class Repository {
         rmStage.clearStage();
         addStage.saveStage(ADD_STAGE);
         rmStage.saveStage(REMOVE_STAGE);
+    }
+
+    private static void printStatusHeader(String header) {
+        System.out.println("=== " + header + " ===");
+    }
+    /** return the name of current branch. */
+    private static String getCurBranch() {
+        return readContentsAsString(HEAD_FILE);
+    }
+    /** return if the file exists in CWD */
+    private static Boolean fileExist(String fileName) {
+        File file = join(CWD, fileName);
+        return file.exists();
     }
 
 }

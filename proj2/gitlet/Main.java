@@ -55,6 +55,10 @@ public class Main {
                 checkInitialized();
                 find(args[1]);
                 break;
+            case "status":
+                checkArgs(args, 1);
+                checkInitialized();
+                status();
             case "checkout":
                 switch(args.length) {
                     case 3:
