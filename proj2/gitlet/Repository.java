@@ -207,6 +207,7 @@ public class Repository {
             }
             System.out.println(branch);
         }
+        System.out.print("\n");
         //
         printStatusHeader("Staged Files");
         StageArea addStage = getAddStage();
@@ -217,6 +218,7 @@ public class Repository {
         for (String file : stagedFiles) {
             System.out.println(file);
         }
+        System.out.print("\n");
         //
         printStatusHeader("Removed Files");
         StageArea rmStage = getRemoveStage();
@@ -227,6 +229,7 @@ public class Repository {
         for (String file : removedFiles) {
             System.out.println(file);
         }
+        System.out.print("\n");
         //
         printStatusHeader("Modifications Not Staged For Commit");
         List<String> files = plainFilenamesIn(CWD);
@@ -277,10 +280,12 @@ public class Repository {
                 System.out.println(file + "(modified)");
             }
         }
+        System.out.print("\n");
         printStatusHeader("Untracked Files");
         for (String file : untrackedFiles) {
             System.out.println(file);
         }
+        System.out.print("\n");
     }
     static void branch(String branchName) {
         judgeBranchExist(branchName);
