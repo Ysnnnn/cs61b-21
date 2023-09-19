@@ -181,7 +181,7 @@ public class Repository {
         boolean find = false;
         for (Commit commit : allCommit) {
             if (commit.getMessage().equals(commitMessage)){
-                printCommit(commit);
+                System.out.println(commit.getUID());
                 find = true;
             }
         }

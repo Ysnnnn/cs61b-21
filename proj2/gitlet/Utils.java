@@ -195,13 +195,14 @@ class Utils {
     /** Returns a list of the names of ALL  FILES in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
      *  not denote a directory. */
+
     private static final FilenameFilter ALL_FILES =
-            new FilenameFilter() {
-                @Override
+        new FilenameFilter() {
+            @Override
                 public boolean accept(File dir, String name) {
                     return true;
-                }
-            };
+            }
+        };
     static List<String> allFilenamesIn(File dir) {
         String[] files = dir.list(ALL_FILES);
         if (files == null) {
