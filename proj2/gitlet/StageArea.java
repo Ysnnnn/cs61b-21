@@ -10,7 +10,7 @@ import static gitlet.Utils.*;
 
 public class StageArea implements Serializable {
     /** Map from file to blob */
-    private HashMap<String, String> fileToBlob ;
+    private HashMap<String, String> fileToBlob;
 
     StageArea() {
         fileToBlob = new HashMap<>();
@@ -49,7 +49,7 @@ public class StageArea implements Serializable {
     }
     /* Update Stage content to commit content */
     public static HashMap<String, String> updateAddStageToCommit
-                            (StageArea addStage, StageArea rmStage, Commit commit) {
+    (StageArea addStage, StageArea rmStage, Commit commit) {
         HashMap<String, String> fileToBlob = commit.getFileToBlob();
         HashMap<String, String> addStageFileToBlob = addStage.getFiletToBlob();
         for (String fileName : addStageFileToBlob.keySet()) {

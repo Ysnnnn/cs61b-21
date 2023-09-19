@@ -164,8 +164,8 @@ public class Repository {
             System.out.println("commit " + commit.getUID());
             parents = commit.getParents();
             if (parents.size() == 2) {
-                System.out.println("Merge: " + parents.get(0).substring(0, 7) +
-                        " " + parents.get(1).substring(0, 7));
+                System.out.println("Merge: " + parents.get(0).substring(0, 7)
+                        + " " + parents.get(1).substring(0, 7));
             }
             System.out.println("Date: " + commit.getTimeStamp());
             System.out.println(commit.getMessage() + "\n");
@@ -188,11 +188,11 @@ public class Repository {
         boolean find = false;
         assert allCommit != null;
         for (String commitName : allCommit) {
-             commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
-             if(commit.getMessage().equals(commitMessage)) {
-                 System.out.println(commit.getUID());
-                 find = true;
-             }
+            commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
+            if (commit.getMessage().equals(commitMessage)) {
+                System.out.println(commit.getUID());
+                find = true;
+            }
         }
         if (!find) {
             exit("Found no commit with that message.");
@@ -343,7 +343,8 @@ public class Repository {
         Set<String> commitFiles = commit.getFileToBlob().keySet();
         for (String file : untrackedFile) {
             if (commitFiles.contains(file)) {
-                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+                exit("There is an untracked file in the way; "
+                        + "delete it, or add and commit it first.");
             }
         }
         HashMap<String, String> fileToBlob = commit.getFileToBlob();
@@ -368,7 +369,8 @@ public class Repository {
         Set<String> commitFiles = commit.getFileToBlob().keySet();
         for (String file : untrackedFile) {
             if (commitFiles.contains(file)) {
-                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+                exit("There is an untracked file in the way;"
+                        + " delete it, or add and commit it first.");
             }
         }
         for (String file : trackedFile) {
@@ -384,6 +386,9 @@ public class Repository {
         clearBothStage();
         String curBranchName = readContentsAsString(HEAD_FILE);
         setBranchHead2Commit(curBranchName, commitUID);
+    }
+    static void merge(String branchName) {
+
     }
     /** set branch head to commit by branch name and save current branch name in HEAD */
     static void setBranchHead2Commit(String branchHeadName, String commitUID) {
@@ -402,11 +407,10 @@ public class Repository {
             exit("A branch with that name already exists.");
         }
     }
-
     /** judge if the current working version of the file is identical to the version in
      * the current commit.If identical, return true, else false.
      */
-     static Boolean sameFileAndHead(Commit headCommit, String filename, String newBlobName) {
+    static Boolean sameFileAndHead(Commit headCommit, String filename, String newBlobName) {
         HashMap<String, String> commitFileToBlob = headCommit.getFileToBlob();
         if (commitFileToBlob.containsKey(filename)) {
             String blobName = commitFileToBlob.get(filename);
@@ -415,10 +419,10 @@ public class Repository {
         return false;
     }
     /** return List of untracked files name in current branch. */
-    static List<String> getUntrackedFile(){
+    static List<String> getUntrackedFile() {
         List<String> untrackedFile = new ArrayList<>();
         Commit commit = getHeadCommit();
-        HashMap<String , String> fileToBlob= commit.getFileToBlob();
+        HashMap<String, String> fileToBlob = commit.getFileToBlob();
         List<String> currentFile = plainFilenamesIn(CWD);
         if (currentFile != null) {
             for (String file :currentFile) {
@@ -430,10 +434,10 @@ public class Repository {
         return untrackedFile;
     }
     /** return List of tracked files name in current branch. */
-    static List<String> getTrackedFile(){
+    static List<String> getTrackedFile() {
         List<String> untrackedFile = new ArrayList<>();
         Commit commit = getHeadCommit();
-        HashMap<String , String> fileToBlob= commit.getFileToBlob();
+        HashMap<String, String> fileToBlob = commit.getFileToBlob();
         List<String> currentFile = plainFilenamesIn(CWD);
         if (currentFile != null) {
             for (String file :currentFile) {

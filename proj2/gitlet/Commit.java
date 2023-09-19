@@ -33,18 +33,19 @@ public class Commit implements Serializable {
     private final List<String> parents;
     private final String UID;
     private final String timeStamp;
-    private final File CommitFileName;
+    private final File commitFileName;
 
     /* TODO: fill in the rest of this class. */
     /** generic commit constructor*/
-    public Commit(String message, Date currentTime, HashMap<String, String> fileToBlob, List<String> parents) {
+    public Commit(String message, Date currentTime, HashMap<String,
+                    String> fileToBlob, List<String> parents) {
         this.message = message;
         this.currentTime = new Date(0);
         this.timeStamp = dateToString(currentTime);
         this.fileToBlob = fileToBlob;
         this.parents = parents;
         this.UID = generateUID();
-        this.CommitFileName = generateFileName();
+        this.commitFileName = generateFileName();
     }
     /** init commit constructor*/
     public Commit() {
@@ -54,7 +55,7 @@ public class Commit implements Serializable {
         this.fileToBlob = new HashMap<>();
         this.parents = new ArrayList<>();
         this.UID = generateUID();
-        this.CommitFileName = generateFileName();
+        this.commitFileName = generateFileName();
     }
 
     private String dateToString(Date date) {
@@ -69,7 +70,7 @@ public class Commit implements Serializable {
         return join(COMMIT_DIR, UID);
     }
     public void saveCommit() {
-        writeObject(CommitFileName, this);
+        writeObject(commitFileName, this);
     }
     public String getUID() {
         return this.UID;
@@ -94,19 +95,19 @@ public class Commit implements Serializable {
         return readObject(join(COMMIT_DIR, masterCommitUID), Commit.class);
     }
     /** return Commit by UID. */
-    public static Commit getCommit(String UID) {
-        File UIDFile = join(COMMIT_DIR, UID);
-        if (!UIDFile.exists()) {
+    public static Commit getCommit(String uID) {
+        File uIDFile = join(COMMIT_DIR, uID);
+        if (!uIDFile.exists()) {
             exit("No commit with that id exists.");
         }
-        return readObject(UIDFile, Commit.class);
+        return readObject(uIDFile, Commit.class);
     }
     public static void printCommit(Commit commit) {
         System.out.println("===");
         System.out.println("commit " + commit.getUID());
         if (commit.getParents().size() == 2) {
-            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7) +
-                    " " + commit.getParents().get(1).substring(0, 7));
+            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7)
+                    + " " + commit.getParents().get(1).substring(0, 7));
         }
         System.out.println("Date: " + commit.getTimeStamp());
         System.out.println(commit.getMessage() + "\n");

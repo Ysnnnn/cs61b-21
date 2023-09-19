@@ -89,6 +89,10 @@ public class Main {
                 checkInitialized();
                 reset(args[1]);
                 break;
+            case "merge":
+                checkArgs(args,2);
+                checkInitialized();
+                merge(args[1]);
             default:
                 exit("No command with that name exists.");
         }
