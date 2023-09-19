@@ -63,7 +63,10 @@ public class Commit implements Serializable {
     }
 
     private File generateFileName() {
-        return join(COMMIT_DIR, UID);
+        String uID = this.getUID();
+        File commitDir = join(COMMIT_DIR, uID.substring(0, 2));
+        commitDir.mkdir();
+        return join(commitDir, this.UID);
     }
     public void saveCommit() {
         writeObject(commitFileName, this);
@@ -88,11 +91,26 @@ public class Commit implements Serializable {
         String head = readContentsAsString(HEAD_FILE);
         File currentHead = join(HEADS_DIR, head);
         String masterCommitUID = readContentsAsString(currentHead);
-        return readObject(join(COMMIT_DIR, masterCommitUID), Commit.class);
+        File commitFile = join(COMMIT_DIR, masterCommitUID.substring(0, 2));
+        return readObject(join(commitFile, masterCommitUID), Commit.class);
     }
     /** return Commit by UID. */
     public static Commit getCommit(String uID) {
-        File uIDFile = join(COMMIT_DIR, uID);
+        File commitFile = join(COMMIT_DIR, uID.substring(0, 2));
+        if (!commitFile.exists()) {
+            exit("No commit with that id exists.");
+        }
+        File uIDFile = join(COMMIT_DIR, "notExists");
+        if (uID.length() == 40) {
+            uIDFile = join(commitFile, uID);
+        } else {
+            List<String> commitsName = plainFilenamesIn(commitFile);
+            for (String commitName : commitsName) {
+                if (commitName.substring(0, uID.length()).equals(uID)) {
+                    uIDFile = join(commitFile, commitName);
+                }
+            }
+        }
         if (!uIDFile.exists()) {
             exit("No commit with that id exists.");
         }

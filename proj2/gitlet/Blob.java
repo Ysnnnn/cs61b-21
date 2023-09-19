@@ -20,7 +20,7 @@ public class Blob implements Serializable {
     private byte[] fileContent;
 
     public Blob(String fileName) {
-        File file = join(CWD,fileName);
+        File file = join(CWD, fileName);
         if (!file.exists()) {
             exit("File does not exist.");
         }
