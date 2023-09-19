@@ -9,17 +9,14 @@ import static gitlet.StageArea.*;
 import static gitlet.Utils.*;
 import static gitlet.MyHelperFunction.*;
 
-// TODO: any imports you need here
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author Ysnnnn
  */
 public class Repository {
     /*
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -59,7 +56,6 @@ public class Repository {
     /** removeStage File */
     public static final File REMOVE_STAGE = join(GITLET_DIR, "removeStage");
 
-    /* TODO: fill in the rest of this class. */
     static void init() {
         if (GITLET_DIR.exists()) {
             exit("A Gitlet version-control system already exists in the current directory.");

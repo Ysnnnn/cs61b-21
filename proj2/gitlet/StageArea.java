@@ -48,8 +48,8 @@ public class StageArea implements Serializable {
         this.fileToBlob.clear();
     }
     /* Update Stage content to commit content */
-    public static HashMap<String, String> updateAddStageToCommit
-    (StageArea addStage, StageArea rmStage, Commit commit) {
+    public static HashMap<String, String> updateAddStageToCommit(StageArea addStage,
+                                                                 StageArea rmStage, Commit commit) {
         HashMap<String, String> fileToBlob = commit.getFileToBlob();
         HashMap<String, String> addStageFileToBlob = addStage.getFiletToBlob();
         for (String fileName : addStageFileToBlob.keySet()) {
