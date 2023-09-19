@@ -306,7 +306,7 @@ public class Repository {
         if (!branch.exists()) {
             exit("A branch with that name does not exist.");
         }
-        restrictedDelete(branch);
+        branch.delete();
     }
     static void checkout(String filename) {
         Commit commit = getHeadCommit();
@@ -338,11 +338,14 @@ public class Repository {
             exit("No such branch exists.");
         }
         List<String> untrackedFile = getUntrackedFile();
-        if (!untrackedFile.isEmpty()) {
-            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        }
         switchHead(branchName);
         Commit commit = getHeadCommit();
+        Set<String> commitFiles = commit.getFileToBlob().keySet();
+        for (String file : untrackedFile) {
+            if (commitFiles.contains(file)) {
+                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+            }
+        }
         HashMap<String, String> fileToBlob = commit.getFileToBlob();
         List<String> currentFile = plainFilenamesIn(CWD);
         for (String file : fileToBlob.keySet()) {
@@ -359,30 +362,29 @@ public class Repository {
         clearBothStage();
     }
     static void reset(String commitUID) {
+        List<String> trackedFile = getTrackedFile();
         List<String> untrackedFile = getUntrackedFile();
-        if (!untrackedFile.isEmpty()) {
-            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        }
         Commit commit = getCommit(commitUID);
-        List<String> curFiles = plainFilenamesIn(CWD);
-        //clear CWD
-        if (!curFiles.isEmpty()) {
-            for (String file : curFiles) {
+        Set<String> commitFiles = commit.getFileToBlob().keySet();
+        for (String file : untrackedFile) {
+            if (commitFiles.contains(file)) {
+                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+            }
+        }
+        for (String file : trackedFile) {
+            if (!commitFiles.contains(file)) {
                 restrictedDelete(join(CWD, file));
             }
         }
-        //put file tracked in commit to CWD
-        Set<String> trackedFiles = commit.getFileToBlob().keySet();
-        if (!trackedFiles.isEmpty()) {
-            for (String file : trackedFiles) {
-                Blob blob = readObject(join(BLOB_DIR, commit.getFileToBlob().get(file)), Blob.class);
-                byte[] fileContent = blob.getFileContent();
-                writeContents(join(CWD, file), fileContent);
-            }
+        for (String file : commitFiles) {
+            Blob blob = readObject(join(BLOB_DIR, commit.getFileToBlob().get(file)), Blob.class);
+            byte[] fileContent = blob.getFileContent();
+            writeContents(join(CWD, file), fileContent);
         }
         clearBothStage();
+        String curBranchName = readContentsAsString(HEAD_FILE);
+        setBranchHead2Commit(curBranchName, commitUID);
     }
-
     /** set branch head to commit by branch name and save current branch name in HEAD */
     static void setBranchHead2Commit(String branchHeadName, String commitUID) {
         File file = getBranchHeadFile(branchHeadName);
@@ -421,6 +423,21 @@ public class Repository {
         if (currentFile != null) {
             for (String file :currentFile) {
                 if (!fileToBlob.containsKey(file)) {
+                    untrackedFile.add(file);
+                }
+            }
+        }
+        return untrackedFile;
+    }
+    /** return List of tracked files name in current branch. */
+    static List<String> getTrackedFile(){
+        List<String> untrackedFile = new ArrayList<>();
+        Commit commit = getHeadCommit();
+        HashMap<String , String> fileToBlob= commit.getFileToBlob();
+        List<String> currentFile = plainFilenamesIn(CWD);
+        if (currentFile != null) {
+            for (String file :currentFile) {
+                if (fileToBlob.containsKey(file)) {
                     untrackedFile.add(file);
                 }
             }
