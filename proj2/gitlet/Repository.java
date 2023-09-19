@@ -185,7 +185,7 @@ public class Repository {
     static void find(String commitMessage) {
         List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
         Commit commit;
-        Boolean find = false;
+        boolean find = false;
         assert allCommit != null;
         for (String commitName : allCommit) {
              commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
@@ -295,7 +295,8 @@ public class Repository {
     }
     static void branch(String branchName) {
         judgeBranchExist(branchName);
-        setBranchHead2Commit(branchName, getHeadCommit().getUID());
+        File file = getBranchHeadFile(branchName);
+        writeContents(file, getHeadCommit().getUID());
     }
     static void rmBranch(String branchName) {
         if (branchName.equals(getCurBranch())) {
