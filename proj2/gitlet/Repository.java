@@ -171,22 +171,17 @@ public class Repository {
         } while (parents.size() != 0);
     }
     static void globalLog() {
-        List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
-        assert allCommit != null;
-        for (String commitName : allCommit) {
-            Commit commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
+        List<Commit> allCommit = getAllCommit();
+        for (Commit commit : allCommit) {
             printCommit(commit);
         }
     }
     static void find(String commitMessage) {
-        List<String> allCommit = plainFilenamesIn(COMMIT_DIR);
-        Commit commit;
+        List<Commit> allCommit = getAllCommit();
         boolean find = false;
-        assert allCommit != null;
-        for (String commitName : allCommit) {
-            commit = readObject(join(COMMIT_DIR, commitName), Commit.class);
-            if (commit.getMessage().equals(commitMessage)) {
-                System.out.println(commit.getUID());
+        for (Commit commit : allCommit) {
+            if (commit.getMessage().equals(commitMessage)){
+                printCommit(commit);
                 find = true;
             }
         }
@@ -468,6 +463,22 @@ public class Repository {
     private static Boolean fileExist(String fileName) {
         File file = join(CWD, fileName);
         return file.exists();
+    }
+
+    /** return list of all commit. */
+    private static List<Commit> getAllCommit() {
+        List<Commit> allCommitList = new ArrayList<>();
+        List<String> allCommitDir = allFilenamesIn(COMMIT_DIR);
+        assert allCommitDir != null;
+        for (String dir : allCommitDir) {
+            File commitDir = join(COMMIT_DIR, dir);
+            List<String> allCommit = plainFilenamesIn(commitDir);
+            assert allCommit != null;
+            for (String commitName : allCommit) {
+                allCommitList.add(readObject(join(commitDir, commitName), Commit.class));
+            }
+        }
+        return allCommitList;
     }
 
 }

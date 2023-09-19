@@ -167,6 +167,10 @@ class Utils {
                 return new File(dir, name).isFile();
             }
         };
+    /** Returns a list of the names of ALL  FILES in the directory DIR, in
+     *  lexicographic order as Java Strings.  Returns null if DIR does
+     *  not denote a directory.
+     *
 
     /** Returns a list of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
@@ -188,7 +192,28 @@ class Utils {
         return plainFilenamesIn(new File(dir));
     }
 
-    /* OTHER FILE UTILITIES */
+    /** Returns a list of the names of ALL  FILES in the directory DIR, in
+     *  lexicographic order as Java Strings.  Returns null if DIR does
+     *  not denote a directory. */
+    private static final FilenameFilter ALL_FILES =
+            new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return true;
+                }
+            };
+    static List<String> allFilenamesIn(File dir) {
+        String[] files = dir.list(ALL_FILES);
+        if (files == null) {
+            return null;
+        } else {
+            Arrays.sort(files);
+            return Arrays.asList(files);
+        }
+    }
+
+
+     /* OTHER FILE UTILITIES */
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
      *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
