@@ -616,7 +616,7 @@ public class Repository {
     private static List<String> getHeadCommits() {
         Commit headCommit = getHeadCommit();
         List<String> headCommits = new ArrayList<>();
-        while (headCommit.getParents() != null) {
+        while (!headCommit.getParents().isEmpty()) {
             headCommits.add(headCommit.getUID());
             headCommit = getCommit(headCommit.getParents().get(0));
         }
