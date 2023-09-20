@@ -44,6 +44,15 @@ public class StageArea implements Serializable {
     static Boolean stageIsEmpty(StageArea stage) {
         return stage.fileToBlob.isEmpty();
     }
+    /** if both stage is empty, return true, else return false. */
+    static Boolean bothStageIsEmpty() {
+        StageArea addStage = getAddStage();
+        StageArea rmStage = getRemoveStage();
+        if (!addStage.fileToBlob.isEmpty() || !rmStage.fileToBlob.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
     public void clearStage() {
         this.fileToBlob.clear();
     }

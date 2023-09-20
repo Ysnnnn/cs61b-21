@@ -199,8 +199,8 @@ class Utils {
     private static final FilenameFilter ALL_FILES =
         new FilenameFilter() {
             @Override
-                public boolean accept(File dir, String name) {
-                    return true;
+            public boolean accept(File dir, String name) {
+                return true;
             }
         };
     static List<String> allFilenamesIn(File dir) {

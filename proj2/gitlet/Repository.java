@@ -134,9 +134,9 @@ public class Repository {
         the working directory if the user has not already done so.  If the file is
         neither staged nor tracked by the head commit, print the error message.*/
         Commit headCommit = getHeadCommit();
-        Boolean fileInCommit = headCommit.getFileToBlob().containsKey(fileName);
+        boolean fileInCommit = headCommit.getFileToBlob().containsKey(fileName);
         StageArea addStage = getAddStage();
-        Boolean fileInAddStage = addStage.getFiletToBlob().containsKey(fileName);
+        boolean fileInAddStage = addStage.getFiletToBlob().containsKey(fileName);
         StageArea rmStage = getRemoveStage();
         if (!fileInCommit && !fileInAddStage) {
             exit("No reason to remove the file.");
@@ -180,7 +180,7 @@ public class Repository {
         List<Commit> allCommit = getAllCommit();
         boolean find = false;
         for (Commit commit : allCommit) {
-            if (commit.getMessage().equals(commitMessage)){
+            if (commit.getMessage().equals(commitMessage)) {
                 System.out.println(commit.getUID());
                 find = true;
             }
@@ -379,8 +379,251 @@ public class Repository {
         setBranchHead2Commit(curBranchName, commitUID);
     }
     static void merge(String branchName) {
-
+        if (!bothStageIsEmpty()) {
+            exit("You have uncommitted changes.");
+        }
+        File branch = join(HEADS_DIR, branchName);
+        if (!branch.exists()) {
+            exit("A branch with that name does not exist.");
+        }
+        if (branchName.equals(getCurBranch())) {
+            exit("Cannot merge a branch with itself.");
+        }
+        boolean conflict = false;
+        Commit ancestor = getAncestor(branchName);
+        String branchUID =  getBranchCommitUID(branchName);
+        if (branchUID.equals(ancestor.getUID())) {
+            exit("Given branch is an ancestor of the current branch.");
+        }
+        if (ancestor.getUID().equals(getHeadCommit().getUID())) {
+            checkout(branchName);
+            exit("Current branch fast-forwarded.");
+        }
+        Commit given = getCommit(getBranchCommitUID(branchName));
+        Commit current = getHeadCommit();
+        Set<String> willBeRemoved = getWillBeRemoved(ancestor, given, current);
+        Set<String> toBeCheckedOut = getToBeCheckedOut(ancestor, given, current);
+        Set<String> diffFrom3 = getDiffFrom3(ancestor, given, current);
+        Set<String> curModGivDel = getcurModGivDel(ancestor, given, current);
+        Set<String> givModCurDel = getcurModGivDel(ancestor, current, given);
+        Set<String> anDelDiff = getAnDelDiff(ancestor, current, given);
+        Set<String> toBeDelOrMod = new HashSet<>();
+        toBeDelOrMod.addAll(willBeRemoved);
+        toBeDelOrMod.addAll(toBeCheckedOut);
+        toBeDelOrMod.addAll(diffFrom3);
+        toBeDelOrMod.addAll(curModGivDel);
+        toBeDelOrMod.addAll(givModCurDel);
+        toBeDelOrMod.addAll(anDelDiff);
+        List<String> untrackedFile = getUntrackedFile();
+        for (String file : untrackedFile) {
+            if (toBeDelOrMod.contains(file)) {
+                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+            }
+        }
+        for (String file : willBeRemoved) {
+            rm(file);
+        }
+        for (String file : toBeCheckedOut) {
+            checkout(given.getUID(), file);
+        }
+        if (!diffFrom3.isEmpty()) {
+            conflict = true;
+        }
+        mergeAndSave(diffFrom3, current, given);
+        if (!curModGivDel.isEmpty()) {
+            conflict = true;
+        }
+        for (String file : curModGivDel) {
+            Blob currentBlob = getBlob(current.getFileToBlob().get(file));
+            String mergeContent = mergeContent("", currentBlob.getFileContent());
+            writeContents(join(CWD, file), mergeContent);
+            add(file);
+        }
+        if (!givModCurDel.isEmpty()) {
+            conflict = true;
+        }
+        for (String file : curModGivDel) {
+            Blob givenBlob = getBlob(given.getFileToBlob().get(file));
+            String mergeContent = mergeContent(givenBlob.getFileContent(), "");
+            writeContents(join(CWD, file), mergeContent);
+            add(file);
+        }
+        mergeAndSave(anDelDiff, current, given);
+        mergeCommit("Merged " + branchName +" into " + getCurBranch() + ".", given);
+        if (conflict) {
+            exit("Encountered a merge conflict.");
+        }
     }
+    static void mergeCommit(String message, Commit given) {
+        if (message.isEmpty()) {
+            exit("Please enter a commit message.");
+        }
+        StageArea addStage = getAddStage();
+        StageArea rmStage = getRemoveStage();
+        if (stageIsEmpty(addStage) && stageIsEmpty(rmStage)) {
+            exit("No changes added to the commit.");
+        }
+        Commit headCommit = getHeadCommit();
+        HashMap<String, String> fileToBlob = updateAddStageToCommit(addStage, rmStage, headCommit);
+        String headUID = headCommit.getUID();
+        List<String> parents = new ArrayList<>();
+        parents.add(headUID);
+        parents.add(given.getUID());
+        Commit newHeadCommit = new Commit(message, new Date(), fileToBlob, parents);
+        newHeadCommit.saveCommit();
+        String curBranchName = readContentsAsString(HEAD_FILE);
+        setBranchHead2Commit(curBranchName, newHeadCommit.getUID());
+        addStage.clearStage();
+        addStage.saveStage(ADD_STAGE);
+        rmStage.clearStage();
+        rmStage.saveStage(REMOVE_STAGE);
+    }
+    /** merge content and save file. */
+    private static void mergeAndSave(Set<String> files, Commit given, Commit current) {
+        for (String file : files) {
+            Blob givenBlob = getBlob(given.getFileToBlob().get(file));
+            Blob currentBlob = getBlob(current.getFileToBlob().get(file));
+            String mergeContent = mergeContent(givenBlob.getFileContent(), currentBlob.getFileContent());
+            writeContents(join(CWD, file), mergeContent);
+            add(file);
+        }
+    }
+    /** return set of files which not existed in ancestor and different between given and current. */
+    private static Set<String> getAnDelDiff(Commit ancestor, Commit current, Commit given) {
+        Set<String> anDelDiff = new HashSet<>();
+        Set<String> currentFiles = current.getFileToBlob().keySet();
+        for (String file : currentFiles) {
+            if (!ancestor.getFileToBlob().containsKey(file)) {
+                if (!current.getFileToBlob().get(file).equals(given.getFileToBlob().get(file))) {
+                    anDelDiff.add(file);
+                }
+            }
+        }
+        return anDelDiff;
+    }
+
+    /** return set of files which is modified in current but deleted in given. */
+    private static Set<String> getcurModGivDel(Commit ancestor, Commit given, Commit current) {
+        Set<String> curModGivDel = new HashSet<>();
+        Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
+        for (String file : ancestorFiles) {
+            if (current.getFileToBlob().containsKey(file) && !given.getFileToBlob().containsKey(file)) {
+                curModGivDel.add(file);
+            }
+        }
+        return curModGivDel;
+    }
+
+    /** return merged contents. */
+    private static String mergeContent(byte[] givenContent, byte[] curContent) {
+        String gContent = new String(givenContent);
+        String cContent = new String(curContent);
+        return "<<<<<<< HEAD\n" + cContent + "=======\n" + gContent + ">>>>>>>";
+    }
+    private static String mergeContent(String givenContent, byte[] curContent) {
+        String cContent = new String(curContent);
+        return "<<<<<<< HEAD\n" + cContent + "=======\n" + givenContent + ">>>>>>>";
+    }
+    private static String mergeContent(byte[] givenContent, String curContent) {
+        String gContent = new String(givenContent);
+        return "<<<<<<< HEAD\n" + curContent + "=======\n" + gContent + ">>>>>>>";
+    }
+
+
+    /** return set of files which is all exist, but they're different. */
+    private static Set<String> getDiffFrom3(Commit ancestor, Commit given, Commit current) {
+        Set<String> allHave = getFileAllHave(ancestor, given, current);
+        Set<String> conflict = new HashSet<>();
+        for (String file : allHave) {
+            String ancestorBlob = ancestor.getFileToBlob().get(file);
+            String givenBlob = given.getFileToBlob().get(file);
+            String currentBlob = current.getFileToBlob().get(file);
+            boolean ancGiven = !ancestorBlob.equals(givenBlob);
+            boolean ancCur = !ancestorBlob.equals(currentBlob);
+            boolean givCur = !givenBlob.equals(currentBlob);
+            if (ancGiven && ancCur && givCur) {
+                conflict.add(file);
+            }
+        }
+        return conflict;
+    }
+
+    /** return files to be checked out from given branch.*/
+    private static Set<String> getToBeCheckedOut(Commit ancestor, Commit given, Commit current) {
+        Set<String> toBeCCheckedOut = new HashSet<>();
+        Set<String> givenFiles = given.getFileToBlob().keySet();
+        for (String file : givenFiles) {
+            String ancestorBlob = ancestor.getFileToBlob().get(file);
+            String givenBlob = given.getFileToBlob().get(file);
+            String currentBlob = current.getFileToBlob().get(file);
+            if (!ancestor.getFileToBlob().containsKey(file) &&
+                    !current.getFileToBlob().containsKey(file)) {
+                toBeCCheckedOut.add(file);
+            } else if (!givenBlob.equals(ancestorBlob) && ancestorBlob.equals(currentBlob)) {
+                toBeCCheckedOut.add(file);
+            }
+        }
+        return toBeCCheckedOut;
+    }
+
+    /** return Set of files that ancestor have but one of the given or current don't have.*/
+    private static Set<String> getWillBeRemoved(Commit ancestor, Commit given, Commit current) {
+        Set<String> willBeRemoved = new HashSet<>();
+        Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
+        for (String file : ancestorFiles) {
+            if (!given.getFileToBlob().containsKey(file) &&
+                    current.getFileToBlob().containsKey(file)) {
+                willBeRemoved.add(file);
+            }
+            if (given.getFileToBlob().containsKey(file) &&
+                    current.getFileToBlob().containsKey(file)) {
+                willBeRemoved.add(file);
+            }
+        }
+        return willBeRemoved;
+    }
+    /** return set of file names which all commits have. */
+    private static Set<String> getFileAllHave(Commit ancestor, Commit given, Commit current) {
+        Set<String> allHave = new HashSet<>();
+        Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
+        for (String file : ancestorFiles) {
+            if (given.getFileToBlob().containsKey(file) &&
+                current.getFileToBlob().containsKey(file)) {
+                allHave.add(file);
+            }
+        }
+        return allHave;
+    }
+    /** return the commit UID of the given branch. */
+    private static String getBranchCommitUID(String branchName) {
+        return readContentsAsString(getBranchHeadFile(branchName));
+    }
+
+    /** return the ancestor commit by the given branch. */
+    private static Commit getAncestor(String branchName) {
+        List<String> headCommits = getHeadCommits();
+        String branchUID = getBranchCommitUID(branchName);
+        Commit branchCommit = getCommit(branchUID);
+        while (branchCommit.getParents().get(0) != null) {
+            if (headCommits.contains(branchCommit.getUID())) {
+                return branchCommit;
+            }
+            branchCommit = getCommit(branchCommit.getParents().get(0));
+        }
+        return branchCommit;
+    }
+    /** return list of all commits in head branch. */
+    private static List<String> getHeadCommits() {
+        Commit headCommit = getHeadCommit();
+        List<String> headCommits = new ArrayList<>();
+        while (headCommit.getParents() != null) {
+            headCommits.add(headCommit.getUID());
+            headCommit = getCommit(headCommit.getParents().get(0));
+        }
+        headCommits.add(headCommit.getParents().get(0));
+        return headCommits;
+    }
+
     /** set branch head to commit by branch name and save current branch name in HEAD */
     static void setBranchHead2Commit(String branchHeadName, String commitUID) {
         File file = getBranchHeadFile(branchHeadName);
@@ -480,5 +723,4 @@ public class Repository {
         }
         return allCommitList;
     }
-
 }
