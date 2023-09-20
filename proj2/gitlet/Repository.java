@@ -442,7 +442,7 @@ public class Repository {
         if (!givModCurDel.isEmpty()) {
             conflict = true;
         }
-        for (String file : curModGivDel) {
+        for (String file : givModCurDel) {
             Blob givenBlob = getBlob(given.getFileToBlob().get(file));
             String mergeContent = mergeContent(givenBlob.getFileContent(), "");
             writeContents(join(CWD, file), mergeContent);
