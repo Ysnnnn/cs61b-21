@@ -620,7 +620,7 @@ public class Repository {
             headCommits.add(headCommit.getUID());
             headCommit = getCommit(headCommit.getParents().get(0));
         }
-        headCommits.add(headCommit.getParents().get(0));
+        headCommits.add(headCommit);
         return headCommits;
     }
 
