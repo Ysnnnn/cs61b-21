@@ -93,6 +93,7 @@ public class Main {
                 checkArgs(args,2);
                 checkInitialized();
                 merge(args[1]);
+                break;
             default:
                 exit("No command with that name exists.");
         }
