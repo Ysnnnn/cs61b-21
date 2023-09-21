@@ -604,16 +604,27 @@ public class Repository {
 
     /** return the ancestor commit by the given branch. */
     private static Commit getAncestor(String branchName) {
-        List<String> headCommits = getHeadCommits();
+        Set<String> headCommits = new HashSet<>();
+        getHeadCommits(getHeadCommit(), headCommits);
         String branchUID = getBranchCommitUID(branchName);
         Commit branchCommit = getCommit(branchUID);
-        while (branchCommit.getParents().get(0) != null) {
-            if (headCommits.contains(branchCommit.getUID())) {
-                return branchCommit;
-            }
-            branchCommit = getCommit(branchCommit.getParents().get(0));
+        return findClosestCommit(branchCommit, headCommits);
+    }
+    /** return the commit closest to headCommits. */
+    private static Commit findClosestCommit(Commit commit, Set<String> headCommits) {
+        if (commit.getParents().isEmpty()) {
+            return commit;
         }
-        return branchCommit;
+        if (headCommits.contains(commit.getUID())) {
+            return commit;
+        }
+        for (String patent : commit.getParents()) {
+            Commit closestCommit = findClosestCommit(getCommit(patent), headCommits);
+            if (closestCommit != null) {
+                return closestCommit;
+            }
+        }
+        return null;
     }
     /** return list of all commits in head branch. */
     private static List<String> getHeadCommits() {
@@ -625,6 +636,17 @@ public class Repository {
         }
         headCommits.add(headCommit.getUID());
         return headCommits;
+    }
+    /** put all commits in head branch in headCommits. */
+    private static void getHeadCommits(Commit headCommit, Set<String> headCommits) {
+        if (headCommit.getParents().isEmpty()) {
+            headCommits.add(headCommit.getUID());
+            return;
+        }
+        for (String parent : headCommit.getParents()) {
+            headCommits.add(parent);
+            getHeadCommits(getCommit(parent), headCommits);
+        }
     }
 
     /** set branch head to commit by branch name and save current branch name in HEAD */
