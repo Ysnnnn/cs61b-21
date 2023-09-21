@@ -396,7 +396,7 @@ public class Repository {
             exit("Given branch is an ancestor of the current branch.");
         }
         if (ancestor.getUID().equals(getHeadCommit().getUID())) {
-            checkout(branchName);
+            checkoutBranch(branchName);
             exit("Current branch fast-forwarded.");
         }
         Commit given = getCommit(getBranchCommitUID(branchName));
@@ -606,6 +606,7 @@ public class Repository {
     private static Commit getAncestor(String branchName) {
         Set<String> headCommits = new HashSet<>();
         getHeadCommits(getHeadCommit(), headCommits);
+        headCommits.add(getHeadCommit().getUID());
         String branchUID = getBranchCommitUID(branchName);
         Commit branchCommit = getCommit(branchUID);
         return findClosestCommit(branchCommit, headCommits);
@@ -637,7 +638,7 @@ public class Repository {
         headCommits.add(headCommit.getUID());
         return headCommits;
     }
-    /** put all commits in head branch in headCommits. */
+    /** put all commits in head branch in headCommits, except headCommit. */
     private static void getHeadCommits(Commit headCommit, Set<String> headCommits) {
         if (headCommit.getParents().isEmpty()) {
             headCommits.add(headCommit.getUID());
