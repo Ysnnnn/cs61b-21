@@ -331,22 +331,22 @@ public class Repository {
         List<String> untrackedFile = getUntrackedFile();
         switchHead(branchName);
         Commit commit = getHeadCommit();
-        Set<String> commitFiles = commit.getFileToBlob().keySet();
+        HashMap<String, String> fileToBlob = commit.getFileToBlob();
+        Set<String> commitFiles = fileToBlob.keySet();
         for (String file : untrackedFile) {
             if (commitFiles.contains(file)) {
                 exit("There is an untracked file in the way; "
                         + "delete it, or add and commit it first.");
             }
         }
-        HashMap<String, String> fileToBlob = commit.getFileToBlob();
         List<String> currentFile = plainFilenamesIn(CWD);
-        for (String file : fileToBlob.keySet()) {
+        for (String file : commitFiles) {
             Blob blob = readObject(join(BLOB_DIR, fileToBlob.get(file)), Blob.class);
             writeContents(join(CWD, file), blob.getFileContent());
         }
-        if (currentFile != null) {
+        if (!currentFile.isEmpty()) {
             for (String file : currentFile) {
-                if (!fileToBlob.containsKey(file)) {
+                if (!commitFiles.contains(file)) {
                     restrictedDelete(join(CWD, file));
                 }
             }
@@ -479,7 +479,7 @@ public class Repository {
         rmStage.saveStage(REMOVE_STAGE);
     }
     /** merge content and save file. */
-    private static void mergeAndSave(Set<String> files, Commit given, Commit current) {
+    private static void mergeAndSave(Set<String> files, Commit current, Commit given) {
         for (String file : files) {
             Blob givenBlob = getBlob(given.getFileToBlob().get(file));
             Blob currentBlob = getBlob(current.getFileToBlob().get(file));
@@ -493,7 +493,7 @@ public class Repository {
         Set<String> anDelDiff = new HashSet<>();
         Set<String> currentFiles = current.getFileToBlob().keySet();
         for (String file : currentFiles) {
-            if (!ancestor.getFileToBlob().containsKey(file)) {
+            if (!ancestor.getFileToBlob().containsKey(file) && given.getFileToBlob().containsKey(file)) {
                 if (!current.getFileToBlob().get(file).equals(given.getFileToBlob().get(file))) {
                     anDelDiff.add(file);
                 }
@@ -508,7 +508,9 @@ public class Repository {
         Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
         for (String file : ancestorFiles) {
             if (current.getFileToBlob().containsKey(file) && !given.getFileToBlob().containsKey(file)) {
-                curModGivDel.add(file);
+                if (!current.getFileToBlob().get(file).equals(ancestor.getFileToBlob().get(file))) {
+                    curModGivDel.add(file);
+                }
             }
         }
         return curModGivDel;
@@ -518,7 +520,7 @@ public class Repository {
     private static String mergeContent(byte[] givenContent, byte[] curContent) {
         String gContent = new String(givenContent);
         String cContent = new String(curContent);
-        return "<<<<<<< HEAD\n" + cContent + "=======\n" + gContent + ">>>>>>>";
+        return "<<<<<<< HEAD\n" + cContent + "\n=======\n" + gContent + ">>>>>>>";
     }
     private static String mergeContent(String givenContent, byte[] curContent) {
         String cContent = new String(curContent);
@@ -575,10 +577,10 @@ public class Repository {
                     current.getFileToBlob().containsKey(file)) {
                 willBeRemoved.add(file);
             }
-            if (given.getFileToBlob().containsKey(file) &&
-                    current.getFileToBlob().containsKey(file)) {
-                willBeRemoved.add(file);
-            }
+//            if (given.getFileToBlob().containsKey(file) &&
+//                    !current.getFileToBlob().containsKey(file)) {
+//                willBeRemoved.add(file);
+//            }
         }
         return willBeRemoved;
     }
