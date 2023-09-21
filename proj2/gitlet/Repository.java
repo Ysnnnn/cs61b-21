@@ -450,7 +450,7 @@ public class Repository {
             add(file);
         }
         mergeAndSave(anDelDiff, current, given);
-        mergeCommit("Merged " + branchName +" into " + getCurBranch() + ".", given);
+        mergeCommit("Merged " + branchName + " into " + getCurBranch() + ".", given);
         if (conflict) {
             exit("Encountered a merge conflict.");
         }
@@ -559,8 +559,8 @@ public class Repository {
             String ancestorBlob = ancestor.getFileToBlob().get(file);
             String givenBlob = given.getFileToBlob().get(file);
             String currentBlob = current.getFileToBlob().get(file);
-            if (!ancestor.getFileToBlob().containsKey(file) &&
-                    !current.getFileToBlob().containsKey(file)) {
+            if (!ancestor.getFileToBlob().containsKey(file)
+                    && !current.getFileToBlob().containsKey(file)) {
                 toBeCCheckedOut.add(file);
             } else if (!givenBlob.equals(ancestorBlob) && ancestorBlob.equals(currentBlob)) {
                 toBeCCheckedOut.add(file);
@@ -574,8 +574,8 @@ public class Repository {
         Set<String> willBeRemoved = new HashSet<>();
         Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
         for (String file : ancestorFiles) {
-            if (!given.getFileToBlob().containsKey(file) &&
-                    current.getFileToBlob().containsKey(file)) {
+            if (!given.getFileToBlob().containsKey(file)
+                    && current.getFileToBlob().containsKey(file)) {
                 willBeRemoved.add(file);
             }
 //            if (given.getFileToBlob().containsKey(file) &&
@@ -590,8 +590,8 @@ public class Repository {
         Set<String> allHave = new HashSet<>();
         Set<String> ancestorFiles = ancestor.getFileToBlob().keySet();
         for (String file : ancestorFiles) {
-            if (given.getFileToBlob().containsKey(file) &&
-                current.getFileToBlob().containsKey(file)) {
+            if (given.getFileToBlob().containsKey(file)
+                    && current.getFileToBlob().containsKey(file)) {
                 allHave.add(file);
             }
         }
