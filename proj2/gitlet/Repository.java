@@ -425,6 +425,7 @@ public class Repository {
         }
         for (String file : toBeCheckedOut) {
             checkout(given.getUID(), file);
+            add(file);
         }
         if (!diffFrom3.isEmpty()) {
             conflict = true;
