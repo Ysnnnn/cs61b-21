@@ -525,11 +525,11 @@ public class Repository {
     }
     private static String mergeContent(String givenContent, byte[] curContent) {
         String cContent = new String(curContent);
-        return "<<<<<<< HEAD\n" + cContent + "\n=======\n" + givenContent + ">>>>>>>";
+        return "<<<<<<< HEAD\n" + cContent + "=======\n" + givenContent + ">>>>>>>";
     }
     private static String mergeContent(byte[] givenContent, String curContent) {
         String gContent = new String(givenContent);
-        return "<<<<<<< HEAD\n" + curContent + "\n=======\n" + gContent + ">>>>>>>";
+        return "<<<<<<< HEAD\n" + curContent + "=======\n" + gContent + ">>>>>>>";
     }
 
 
